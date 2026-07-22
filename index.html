@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سجل أجهزة بنك دم دكرنس - كود 177</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Cairo', sans-serif; }
+    .demo-badge {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+
+  <!-- Auth Screen -->
+  <div id="auth-screen" class="flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md border border-slate-200">
+      <div class="text-center mb-8">
+        <div class="w-20 h-20 bg-gradient-to-br from-red-600 to-red-800 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg">
+          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-800">سجل أجهزة بنك دم دكرنس</h1>
+        <p class="text-slate-500 mt-1">كود 177 - نظام إدارة الأجهزة الطبية</p>
+      </div>
+
+      <!-- Mode Toggle -->
+      <div class="flex bg-slate-100 rounded-xl p-1 mb-6">
+        <button onclick="switchMode('firebase')" id="mode-firebase" class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all bg-white text-red-700 shadow-sm">Firebase سحابة</button>
+        <button onclick="switchMode('local')" id="mode-local" class="flex-1 py-2 rounded-lg text-sm font-semibold transition-all text-slate-500 hover:text-slate-700">تخزين محلي</button>
+      </div>
+
+      <div id="firebase-auth-section">
+        <div id="auth-tabs" class="flex bg-slate-100 rounded-xl p-1 mb-6">
+          <button onclick="switchAuthTab('login')" id="tab-login" class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all bg-white text-red-700 shadow-sm">تسجيل الدخول</button>
+          <button onclick="switchAuthTab('register')" id="tab-register" class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all text-slate-500 hover:text-slate-700">حساب جديد</button>
+        </div>
+
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">البريد الإلكتروني</label>
+              <input type="email" id="login-email" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" placeholder="example@domain.com" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">كلمة المرور</label>
+              <input type="password" id="login-password" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="w-full bg-gradient-to-r from-red-700 to-red-900 text-white py-3.5 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98]">
+              دخول للنظام
+            </button>
+          </div>
+        </form>
+
+        <form id="register-form" class="hidden" onsubmit="handleRegister(event)">
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">الاسم الكامل</label>
+              <input type="text" id="reg-name" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" placeholder="الاسم بالكامل" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">البريد الإلكتروني</label>
+              <input type="email" id="reg-email" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" placeholder="example@domain.com" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">كلمة المرور</label>
+              <input type="password" id="reg-password" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" placeholder="8 أحرف على الأقل" required minlength="6">
+            </div>
+            <button type="submit" class="w-full bg-gradient-to-r from-red-700 to-red-900 text-white py-3.5 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98]">
+              إنشاء حساب
+            </button>
+          </div>
+        </form>
+
+        <div id="auth-error" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm text-center"></div>
+      </div>
+
+      <!-- Demo Account -->
+      <div class="mt-6 pt-6 border-t border-slate-200">
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 mb-4">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="demo-badge inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-600 text-white">تجريبي</span>
+            <span class="text-sm font-bold text-emerald-800">حساب جاهز للتجربة</span>
+          </div>
+          <p class="text-xs text-emerald-600 mb-3">اضغط الزر تحت عشان تدخل مباشرة بدون تسجيل</p>
+          <button onclick="demoLogin()" class="w-full py-3 rounded-xl font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            دخول فوري - تجريبي
+          </button>
+        </div>
+        <p class="text-xs text-slate-400 text-center">الحساب: demo@dekernes177.com | كلمة المرور: demo1234</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Dashboard -->
+  <div id="dashboard" class="hidden">
+    <!-- Demo Banner -->
+    <div id="demo-banner" class="hidden bg-emerald-600 text-white text-center py-2 text-sm font-medium">
+      <span class="inline-flex items-center gap-2">
+        <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
+        وضع التجربة - البيانات مخزنة محلياً على جهازك فقط
+      </span>
+    </div>
+
+    <!-- Top Bar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-xl flex items-center justify-center shadow-md">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+            </div>
+            <div>
+              <h1 class="text-lg font-bold text-slate-800">بنك دم دكرنس</h1>
+              <p class="text-xs text-slate-500">كود 177</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="user-name" class="text-sm font-medium text-slate-600 hidden sm:block"></span>
+            <button onclick="logout()" class="px-4 py-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors">
+              خروج
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-slate-500 mb-1">إجمالي الأجهزة</p>
+              <p id="stat-total" class="text-3xl font-bold text-slate-800">0</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-slate-500 mb-1">بديل موجود</p>
+              <p id="stat-spare" class="text-3xl font-bold text-emerald-600">0</p>
+            </div>
+            <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-slate-500 mb-1">كارت تعريف</p>
+              <p id="stat-card" class="text-3xl font-bold text-amber-600">0</p>
+            </div>
+            <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-slate-500 mb-1">عقد صيانة</p>
+              <p id="stat-contract" class="text-3xl font-bold text-purple-600">0</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Add -->
+      <div class="flex flex-col sm:flex-row gap-3 mb-6">
+        <div class="flex-1 relative">
+          <svg class="w-5 h-5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <input type="text" id="search-input" oninput="searchDevices()" class="w-full pr-10 pl-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" placeholder="البحث بالاسم أو الكود أو الرقم التسلسلي...">
+        </div>
+        <button onclick="openModal()" class="px-6 py-3 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center justify-center gap-2 whitespace-nowrap">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          إضافة جهاز جديد
+        </button>
+      </div>
+
+      <!-- Devices Table -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-right">
+            <thead class="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">#</th>
+                <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">اسم الجهاز</th>
+                <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الكود</th>
+                <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الرقم التسلسلي</th>
+                <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الماركة</th>
+                <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">البديل</th>
+                <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">كارت التعريف</th>
+                <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">سجل الجهاز</th>
+                <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">عقد صيانة</th>
+                <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">تاريخ الصيانة</th>
+                <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="devices-table-body" class="divide-y divide-slate-100">
+            </tbody>
+          </table>
+        </div>
+        <div id="empty-state" class="hidden py-16 text-center">
+          <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+          </div>
+          <p class="text-slate-500 font-medium">لا توجد أجهزة مسجلة بعد</p>
+          <p class="text-slate-400 text-sm mt-1">اضغط "إضافة جهاز جديد" لبدء التسجيل</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div id="device-modal" class="hidden fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-slate-900/50 transition-opacity backdrop-blur-sm" onclick="closeModal()"></div>
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      <div class="inline-block align-bottom bg-white rounded-2xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+        <div class="bg-gradient-to-r from-red-700 to-red-900 px-6 py-4 flex items-center justify-between">
+          <h3 id="modal-title" class="text-lg font-bold text-white">إضافة جهاز جديد</h3>
+          <button onclick="closeModal()" class="text-white/80 hover:text-white transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+        <form id="device-form" onsubmit="saveDevice(event)" class="p-6">
+          <input type="hidden" id="device-id">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="md:col-span-2">
+              <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs">1</span>
+                البيانات الأساسية
+              </h4>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">اسم الجهاز <span class="text-red-500">*</span></label>
+              <input type="text" id="dev-name" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">الكود <span class="text-red-500">*</span></label>
+              <input type="text" id="dev-code" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" required>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">الرقم التسلسلي</label>
+              <input type="text" id="dev-serial" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">الماركة</label>
+              <input type="text" id="dev-brand" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">الموديل</label>
+              <input type="text" id="dev-model" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right">
+            </div>
+
+            <div class="md:col-span-2 mt-2">
+              <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs">2</span>
+                حالة الجهاز
+              </h4>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">البديل</label>
+              <select id="dev-spare" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white">
+                <option value="لا يوجد">لا يوجد</option>
+                <option value="يوجد">يوجد</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">كارت التعريف</label>
+              <select id="dev-idcard" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white">
+                <option value="لا يوجد">لا يوجد</option>
+                <option value="يوجد">يوجد</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">سجل الجهاز</label>
+              <select id="dev-log" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white">
+                <option value="لا يوجد">لا يوجد</option>
+                <option value="يوجد">يوجد</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">عقد الصيانة</label>
+              <select id="dev-contract" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white">
+                <option value="لا يوجد">لا يوجد</option>
+                <option value="يوجد">يوجد</option>
+              </select>
+            </div>
+
+            <div class="md:col-span-2 mt-2">
+              <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs">3</span>
+                التواريخ والأعطال
+              </h4>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">تاريخ الصيانة</label>
+              <input type="date" id="dev-maint-date" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">تاريخ التشغيل</label>
+              <input type="date" id="dev-oper-date" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">تاريخ التركيب</label>
+              <input type="date" id="dev-install-date" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">الأعطال</label>
+              <select id="dev-issues" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white">
+                <option value="لا يوجد">لا يوجد</option>
+                <option value="يوجد">يوجد</option>
+              </select>
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">ملاحظات الأعطال / تفاصيل إضافية</label>
+              <textarea id="dev-notes" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right resize-none"></textarea>
+            </div>
+          </div>
+          <div class="mt-6 flex gap-3 justify-end">
+            <button type="button" onclick="closeModal()" class="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors">
+              إلغاء
+            </button>
+            <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl font-medium hover:shadow-lg transition-all">
+              حفظ الجهاز
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] px-6 py-3 rounded-xl shadow-xl text-white font-medium transition-all transform translate-y-10 opacity-0"></div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="hidden fixed inset-0 z-[120] bg-white/80 backdrop-blur-sm flex items-center justify-center">
+    <div class="flex flex-col items-center gap-3">
+      <div class="w-12 h-12 border-4 border-red-200 border-t-red-700 rounded-full animate-spin"></div>
+      <p class="text-slate-600 font-medium">جاري التحميل...</p>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // ============================================
+    // APP STATE
+    // ============================================
+    let appMode = 'local'; // 'firebase' or 'local'
+    let currentUser = null;
+    let allDevices = [];
+    let unsubscribeDevices = null;
+    let firebaseInitialized = false;
+    let auth = null;
+    let db = null;
+
+    // ============================================
+    // MODE SWITCHING
+    // ============================================
+    function switchMode(mode) {
+      appMode = mode;
+      document.getElementById('mode-firebase').classList.toggle('bg-white', mode === 'firebase');
+      document.getElementById('mode-firebase').classList.toggle('text-red-700', mode === 'firebase');
+      document.getElementById('mode-firebase').classList.toggle('shadow-sm', mode === 'firebase');
+      document.getElementById('mode-firebase').classList.toggle('text-slate-500', mode !== 'firebase');
+      document.getElementById('mode-local').classList.toggle('bg-white', mode === 'local');
+      document.getElementById('mode-local').classList.toggle('text-red-700', mode === 'local');
+      document.getElementById('mode-local').classList.toggle('shadow-sm', mode === 'local');
+      document.getElementById('mode-local').classList.toggle('text-slate-500', mode !== 'local');
+
+      if (mode === 'firebase') {
+        document.getElementById('firebase-auth-section').classList.remove('hidden');
+        initFirebase();
+      } else {
+        document.getElementById('firebase-auth-section').classList.add('hidden');
+      }
+    }
+
+    // ============================================
+    // FIREBASE INIT
+    // ============================================
+    function initFirebase() {
+      if (firebaseInitialized) return;
+      try {
+        const firebaseConfig = {
+          apiKey: "AIzaSyDCBG297mlCIudG6BVViwmH9nZUNnKhW8o",
+          authDomain: "dekernes-blood-bank-177.firebaseapp.com",
+          projectId: "dekernes-blood-bank-177",
+          storageBucket: "dekernes-blood-bank-177.firebasestorage.app",
+          messagingSenderId: "1091914039104",
+          appId: "1:1091914039104:web:1a85a48fb46d99af2804a5"
+        };
+        firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        db = firebase.firestore();
+        firebaseInitialized = true;
+
+        auth.onAuthStateChanged(user => {
+          showLoading(false);
+          if (user) {
+            currentUser = { displayName: user.displayName || user.email, email: user.email, uid: user.uid };
+            enterDashboard();
+          } else {
+            currentUser = null;
+            showAuthScreen();
+          }
+        });
+      } catch (e) {
+        showToast('Firebase not configured. Switch to Local mode.', 'error');
+        switchMode('local');
+      }
+    }
+
+    // ============================================
+    // AUTH SCREEN
+    // ============================================
+    function switchAuthTab(tab) {
+      document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
+      document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
+      document.getElementById('tab-login').classList.toggle('bg-white', tab === 'login');
+      document.getElementById('tab-login').classList.toggle('text-red-700', tab === 'login');
+      document.getElementById('tab-login').classList.toggle('shadow-sm', tab === 'login');
+      document.getElementById('tab-login').classList.toggle('text-slate-500', tab !== 'login');
+      document.getElementById('tab-register').classList.toggle('bg-white', tab === 'register');
+      document.getElementById('tab-register').classList.toggle('text-red-700', tab === 'register');
+      document.getElementById('tab-register').classList.toggle('shadow-sm', tab === 'register');
+      document.getElementById('tab-register').classList.toggle('text-slate-500', tab !== 'register');
+      document.getElementById('auth-error').classList.add('hidden');
+    }
+
+    function showAuthError(msg) {
+      const el = document.getElementById('auth-error');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      if (appMode === 'local') {
+        demoLogin();
+        return;
+      }
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      showLoading(true);
+      auth.signInWithEmailAndPassword(email, password)
+        .catch(err => {
+          showLoading(false);
+          let msg = 'خطأ في تسجيل الدخول';
+          if (err.code === 'auth/user-not-found') msg = 'البريد الإلكتروني غير مسجل';
+          else if (err.code === 'auth/wrong-password') msg = 'كلمة المرور غير صحيحة';
+          else if (err.code === 'auth/invalid-email') msg = 'بريد إلكتروني غير صالح';
+          showAuthError(msg);
+        });
+    }
+
+    function handleRegister(e) {
+      e.preventDefault();
+      if (appMode === 'local') {
+        showToast('في الوضع المحلي، استخدم الدخول التجريبي', 'error');
+        return;
+      }
+      const name = document.getElementById('reg-name').value;
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+      showLoading(true);
+      auth.createUserWithEmailAndPassword(email, password)
+        .then(cred => {
+          return cred.user.updateProfile({ displayName: name });
+        })
+        .catch(err => {
+          showLoading(false);
+          let msg = 'خطأ في إنشاء الحساب';
+          if (err.code === 'auth/email-already-in-use') msg = 'البريد الإلكتروني مستخدم بالفعل';
+          else if (err.code === 'auth/weak-password') msg = 'كلمة المرور ضعيفة (6 أحرف على الأقل)';
+          showAuthError(msg);
+        });
+    }
+
+    // ============================================
+    // DEMO / LOCAL MODE
+    // ============================================
+    function demoLogin() {
+      currentUser = { displayName: 'مدير النظام (تجريبي)', email: 'demo@dekernes177.com', uid: 'demo-user-001' };
+      appMode = 'local';
+      switchMode('local');
+      enterDashboard();
+      showToast('تم الدخول بحساب تجريبي - البيانات محلية', 'success');
+    }
+
+    function enterDashboard() {
+      document.getElementById('user-name').textContent = currentUser.displayName || currentUser.email;
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+      if (appMode === 'local') {
+        document.getElementById('demo-banner').classList.remove('hidden');
+      } else {
+        document.getElementById('demo-banner').classList.add('hidden');
+      }
+      loadDevices();
+    }
+
+    function showAuthScreen() {
+      document.getElementById('auth-screen').classList.remove('hidden');
+      document.getElementById('dashboard').classList.add('hidden');
+      if (unsubscribeDevices) { unsubscribeDevices(); unsubscribeDevices = null; }
+      allDevices = [];
+    }
+
+    function logout() {
+      if (appMode === 'firebase' && auth) {
+        auth.signOut();
+      } else {
+        currentUser = null;
+        showAuthScreen();
+      }
+    }
+
+    // ============================================
+    // DATA LAYER
+    // ============================================
+    function loadDevices() {
+      if (appMode === 'firebase' && db) {
+        if (unsubscribeDevices) unsubscribeDevices();
+        unsubscribeDevices = db.collection('devices')
+          .orderBy('createdAt', 'desc')
+          .onSnapshot(snapshot => {
+            allDevices = [];
+            snapshot.forEach(doc => {
+              allDevices.push({ id: doc.id, ...doc.data() });
+            });
+            renderDevices(allDevices);
+            updateStats(allDevices);
+          }, err => {
+            showToast('خطأ في تحميل البيانات: ' + err.message, 'error');
+          });
+      } else {
+        // Local mode - load from localStorage
+        const stored = localStorage.getItem('dekernes177_devices');
+        allDevices = stored ? JSON.parse(stored) : getSampleDevices();
+        renderDevices(allDevices);
+        updateStats(allDevices);
+      }
+    }
+
+    function getSampleDevices() {
+      return [
+        {
+          id: 'dev-001',
+          name: 'جهاز فصل البلازما',
+          code: 'PLS-2024-001',
+          serial: 'SN88442211',
+          brand: 'Haemonetics',
+          model: 'MCS+ 8150',
+          spare: 'يوجد',
+          idCard: 'يوجد',
+          log: 'يوجد',
+          contract: 'يوجد',
+          maintDate: '2026-07-15',
+          operDate: '2024-03-10',
+          installDate: '2024-03-05',
+          issues: 'لا يوجد',
+          notes: 'آخر صيانة دورية تمت بنجاح',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'dev-002',
+          name: 'جهاز تجميع الدم',
+          code: 'BLD-2024-002',
+          serial: 'SN11223344',
+          brand: 'Fresenius',
+          model: 'COM.TEC',
+          spare: 'لا يوجد',
+          idCard: 'يوجد',
+          log: 'يوجد',
+          contract: 'لا يوجد',
+          maintDate: '2026-06-20',
+          operDate: '2024-01-15',
+          installDate: '2024-01-10',
+          issues: 'يوجد',
+          notes: 'عطل في مضخة التجميع - بانتظار قطعة الغيار',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'dev-003',
+          name: 'ثلاجة حفظ الدم',
+          code: 'REF-2024-003',
+          serial: 'SN55667788',
+          brand: 'Helmer',
+          model: 'iB125',
+          spare: 'لا يوجد',
+          idCard: 'لا يوجد',
+          log: 'يوجد',
+          contract: 'يوجد',
+          maintDate: '2026-08-01',
+          operDate: '2023-11-20',
+          installDate: '2023-11-15',
+          issues: 'لا يوجد',
+          notes: '',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'dev-004',
+          name: 'جهاز تحليل الدم الكامل',
+          code: 'CBC-2024-004',
+          serial: 'SN99887766',
+          brand: 'Sysmex',
+          model: 'XN-1000',
+          spare: 'يوجد',
+          idCard: 'يوجد',
+          log: 'يوجد',
+          contract: 'يوجد',
+          maintDate: '2026-05-10',
+          operDate: '2024-02-01',
+          installDate: '2024-01-28',
+          issues: 'لا يوجد',
+          notes: 'الجهاز يعمل بكفاءة عالية',
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 'dev-005',
+          name: 'جهاز تخثر الدم',
+          code: 'COA-2024-005',
+          serial: 'SN33445566',
+          brand: 'Stago',
+          model: 'STA-R Max',
+          spare: 'لا يوجد',
+          idCard: 'لا يوجد',
+          log: 'لا يوجد',
+          contract: 'لا يوجد',
+          maintDate: '',
+          operDate: '2024-04-05',
+          installDate: '2024-04-01',
+          issues: 'يوجد',
+          notes: 'يحتاج لعقد صيانة عاجل',
+          createdAt: new Date().toISOString()
+        }
+      ];
+    }
+
+    function saveToStorage() {
+      if (appMode === 'local') {
+        localStorage.setItem('dekernes177_devices', JSON.stringify(allDevices));
+      }
+    }
+
+    // ============================================
+    // RENDER
+    // ============================================
+    function renderDevices(devices) {
+      const tbody = document.getElementById('devices-table-body');
+      const empty = document.getElementById('empty-state');
+
+      if (devices.length === 0) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      tbody.innerHTML = devices.map((dev, i) => `
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="px-4 py-3.5 text-sm text-slate-500">${i + 1}</td>
+          <td class="px-4 py-3.5 text-sm font-semibold text-slate-800">${escapeHtml(dev.name || '')}</td>
+          <td class="px-4 py-3.5 text-sm text-slate-600 font-mono">${escapeHtml(dev.code || '')}</td>
+          <td class="px-4 py-3.5 text-sm text-slate-600 font-mono">${escapeHtml(dev.serial || '')}</td>
+          <td class="px-4 py-3.5 text-sm text-slate-600">${escapeHtml(dev.brand || '')}</td>
+          <td class="px-4 py-3.5">
+            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.spare === 'يوجد' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${dev.spare || 'لا يوجد'}</span>
+          </td>
+          <td class="px-4 py-3.5">
+            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.idCard === 'يوجد' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}">${dev.idCard || 'لا يوجد'}</span>
+          </td>
+          <td class="px-4 py-3.5">
+            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.log === 'يوجد' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}">${dev.log || 'لا يوجد'}</span>
+          </td>
+          <td class="px-4 py-3.5">
+            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.contract === 'يوجد' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600'}">${dev.contract || 'لا يوجد'}</span>
+          </td>
+          <td class="px-4 py-3.5 text-sm text-slate-600">${formatDate(dev.maintDate)}</td>
+          <td class="px-4 py-3.5">
+            <div class="flex items-center gap-1">
+              <button onclick="editDevice('${dev.id}')" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="تعديل">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+              </button>
+              <button onclick="deleteDevice('${dev.id}')" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="حذف">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateStats(devices) {
+      document.getElementById('stat-total').textContent = devices.length;
+      document.getElementById('stat-spare').textContent = devices.filter(d => d.spare === 'يوجد').length;
+      document.getElementById('stat-card').textContent = devices.filter(d => d.idCard === 'يوجد').length;
+      document.getElementById('stat-contract').textContent = devices.filter(d => d.contract === 'يوجد').length;
+    }
+
+    function searchDevices() {
+      const q = document.getElementById('search-input').value.toLowerCase().trim();
+      if (!q) { renderDevices(allDevices); return; }
+      const filtered = allDevices.filter(d => 
+        (d.name && d.name.toLowerCase().includes(q)) ||
+        (d.code && d.code.toLowerCase().includes(q)) ||
+        (d.serial && d.serial.toLowerCase().includes(q)) ||
+        (d.brand && d.brand.toLowerCase().includes(q))
+      );
+      renderDevices(filtered);
+    }
+
+    // ============================================
+    // MODAL
+    // ============================================
+    function openModal() {
+      document.getElementById('device-form').reset();
+      document.getElementById('device-id').value = '';
+      document.getElementById('modal-title').textContent = 'إضافة جهاز جديد';
+      document.getElementById('device-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('device-modal').classList.add('hidden');
+    }
+
+    function editDevice(id) {
+      const dev = allDevices.find(d => d.id === id);
+      if (!dev) return;
+      document.getElementById('device-id').value = dev.id;
+      document.getElementById('dev-name').value = dev.name || '';
+      document.getElementById('dev-code').value = dev.code || '';
+      document.getElementById('dev-serial').value = dev.serial || '';
+      document.getElementById('dev-brand').value = dev.brand || '';
+      document.getElementById('dev-model').value = dev.model || '';
+      document.getElementById('dev-spare').value = dev.spare || 'لا يوجد';
+      document.getElementById('dev-idcard').value = dev.idCard || 'لا يوجد';
+      document.getElementById('dev-log').value = dev.log || 'لا يوجد';
+      document.getElementById('dev-contract').value = dev.contract || 'لا يوجد';
+      document.getElementById('dev-maint-date').value = dev.maintDate || '';
+      document.getElementById('dev-oper-date').value = dev.operDate || '';
+      document.getElementById('dev-install-date').value = dev.installDate || '';
+      document.getElementById('dev-issues').value = dev.issues || 'لا يوجد';
+      document.getElementById('dev-notes').value = dev.notes || '';
+      document.getElementById('modal-title').textContent = 'تعديل بيانات الجهاز';
+      document.getElementById('device-modal').classList.remove('hidden');
+    }
+
+    function saveDevice(e) {
+      e.preventDefault();
+      const id = document.getElementById('device-id').value;
+      const data = {
+        name: document.getElementById('dev-name').value.trim(),
+        code: document.getElementById('dev-code').value.trim(),
+        serial: document.getElementById('dev-serial').value.trim(),
+        brand: document.getElementById('dev-brand').value.trim(),
+        model: document.getElementById('dev-model').value.trim(),
+        spare: document.getElementById('dev-spare').value,
+        idCard: document.getElementById('dev-idcard').value,
+        log: document.getElementById('dev-log').value,
+        contract: document.getElementById('dev-contract').value,
+        maintDate: document.getElementById('dev-maint-date').value,
+        operDate: document.getElementById('dev-oper-date').value,
+        installDate: document.getElementById('dev-install-date').value,
+        issues: document.getElementById('dev-issues').value,
+        notes: document.getElementById('dev-notes').value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+
+      showLoading(true);
+
+      if (appMode === 'firebase' && db) {
+        const promise = id 
+          ? db.collection('devices').doc(id).update(data)
+          : db.collection('devices').add({ ...data, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+
+        promise.then(() => {
+          showLoading(false);
+          closeModal();
+          showToast(id ? 'تم تحديث الجهاز بنجاح' : 'تم إضافة الجهاز بنجاح', 'success');
+        }).catch(err => {
+          showLoading(false);
+          showToast('خطأ: ' + err.message, 'error');
+        });
+      } else {
+        // Local mode
+        setTimeout(() => {
+          if (id) {
+            const idx = allDevices.findIndex(d => d.id === id);
+            if (idx !== -1) {
+              allDevices[idx] = { ...allDevices[idx], ...data };
+            }
+          } else {
+            data.id = 'dev-' + Date.now();
+            data.createdAt = new Date().toISOString();
+            allDevices.unshift(data);
+          }
+          saveToStorage();
+          renderDevices(allDevices);
+          updateStats(allDevices);
+          showLoading(false);
+          closeModal();
+          showToast(id ? 'تم تحديث الجهاز بنجاح' : 'تم إضافة الجهاز بنجاح', 'success');
+        }, 300);
+      }
+    }
+
+    function deleteDevice(id) {
+      if (!confirm('هل أنت متأكد من حذف هذا الجهاز؟')) return;
+      showLoading(true);
+
+      if (appMode === 'firebase' && db) {
+        db.collection('devices').doc(id).delete()
+          .then(() => {
+            showLoading(false);
+            showToast('تم حذف الجهاز بنجاح', 'success');
+          })
+          .catch(err => {
+            showLoading(false);
+            showToast('خطأ في الحذف: ' + err.message, 'error');
+          });
+      } else {
+        setTimeout(() => {
+          allDevices = allDevices.filter(d => d.id !== id);
+          saveToStorage();
+          renderDevices(allDevices);
+          updateStats(allDevices);
+          showLoading(false);
+          showToast('تم حذف الجهاز بنجاح', 'success');
+        }, 300);
+      }
+    }
+
+    // ============================================
+    // UTILS
+    // ============================================
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      try {
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('ar-EG');
+      } catch { return dateStr; }
+    }
+
+    function showToast(msg, type) {
+      const toast = document.getElementById('toast');
+      toast.className = `fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] px-6 py-3 rounded-xl shadow-xl text-white font-medium transition-all transform ${type === 'error' ? 'bg-red-600' : 'bg-emerald-600'}`;
+      toast.textContent = msg;
+      toast.classList.remove('hidden');
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-10', 'opacity-0');
+      });
+      setTimeout(() => {
+        toast.classList.add('translate-y-10', 'opacity-0');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 3000);
+    }
+
+    function showLoading(show) {
+      document.getElementById('loading-overlay').classList.toggle('hidden', !show);
+    }
+
+    // Init
+    switchMode('local');
+  </script>
+</body>
+</html>
