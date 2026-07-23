@@ -11,6 +11,9 @@
     .fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="bg-slate-50 min-h-screen">
 
@@ -93,20 +96,30 @@
       </div>
     </div>
 
-    <!-- Search & Add -->
-    <div class="flex flex-col sm:flex-row gap-3 mb-6">
+    <!-- Search, Export & Add -->
+    <div class="flex flex-col lg:flex-row gap-3 mb-6">
       <div class="flex-1 relative">
         <svg class="w-5 h-5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
         </svg>
         <input type="text" id="search-input" oninput="searchDevices()" class="w-full pr-10 pl-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" placeholder="البحث بالاسم أو الكود أو الرقم التسلسلي...">
       </div>
-      <button onclick="openModal()" class="px-6 py-3 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center justify-center gap-2 whitespace-nowrap">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-        </svg>
-        إضافة جهاز جديد
-      </button>
+      <div class="flex gap-2 flex-wrap">
+        <button onclick="exportToExcel()" class="px-5 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          تصدير Excel
+        </button>
+        <button onclick="exportToPDF()" class="px-5 py-3 bg-rose-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          تصدير PDF
+        </button>
+        <button onclick="openModal()" class="px-6 py-3 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          إضافة جهاز جديد
+        </button>
+      </div>
     </div>
 
     <!-- Devices Table -->
@@ -501,6 +514,87 @@
       }, 300);
     }
 
+
+    // ============================================
+    // EXPORT FUNCTIONS
+    // ============================================
+    function exportToExcel() {
+      showLoading(true);
+      setTimeout(() => {
+        const data = allDevices.map((d, i) => ({
+          '#': i + 1,
+          'اسم الجهاز': d.name,
+          'الكود': d.code,
+          'الرقم التسلسلي': d.serial,
+          'الماركة': d.brand,
+          'الموديل': d.model,
+          'البديل': d.spare,
+          'كارت التعريف': d.idCard,
+          'سجل الجهاز': d.log,
+          'عقد الصيانة': d.contract,
+          'تاريخ الصيانة': d.maintDate || '-',
+          'تاريخ التشغيل': d.operDate || '-',
+          'تاريخ التركيب': d.installDate || '-',
+          'الأعطال': d.issues,
+          'ملاحظات': d.notes || ''
+        }));
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'الأجهزة');
+        XLSX.writeFile(wb, 'بنك_دم_دكرنس_الأجهزة.xlsx');
+        showLoading(false);
+        showToast('تم تصدير Excel بنجاح', 'success');
+      }, 500);
+    }
+
+    function exportToPDF() {
+      showLoading(true);
+      setTimeout(() => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        // Header
+        doc.setFillColor(185, 28, 28);
+        doc.rect(0, 0, 297, 22, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(16);
+        doc.text('بنك دم دكرنس - كود 177', 148.5, 14, { align: 'center' });
+        doc.setFontSize(11);
+        doc.text('سجل الأجهزة الطبية', 148.5, 20, { align: 'center' });
+        // Table
+        const body = allDevices.map((d, i) => [
+          i + 1, d.name, d.code, d.serial, d.brand, d.model,
+          d.spare, d.idCard, d.log, d.contract,
+          d.maintDate || '-', d.issues
+        ]);
+        doc.autoTable({
+          head: [['#', 'اسم الجهاز', 'الكود', 'الرقم التسلسلي', 'الماركة', 'الموديل', 'البديل', 'كارت التعريف', 'سجل', 'عقد', 'صيانة', 'أعطال']],
+          body: body,
+          startY: 28,
+          theme: 'grid',
+          headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' },
+          bodyStyles: { halign: 'center', fontSize: 8 },
+          alternateRowStyles: { fillColor: [254, 242, 242] },
+          styles: { font: 'helvetica', cellPadding: 2 },
+          columnStyles: {
+            0: { cellWidth: 8 }, 1: { cellWidth: 35 }, 2: { cellWidth: 22 },
+            3: { cellWidth: 22 }, 4: { cellWidth: 20 }, 5: { cellWidth: 20 },
+            6: { cellWidth: 14 }, 7: { cellWidth: 16 }, 8: { cellWidth: 12 },
+            9: { cellWidth: 12 }, 10: { cellWidth: 18 }, 11: { cellWidth: 14 }
+          }
+        });
+        // Footer
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+          doc.setPage(i);
+          doc.setFontSize(8);
+          doc.setTextColor(100, 100, 100);
+          doc.text('صفحة ' + i + ' من ' + pageCount, 148.5, 210 - 5, { align: 'center' });
+        }
+        doc.save('بنك_دم_دكرنس_الأجهزة.pdf');
+        showLoading(false);
+        showToast('تم تصدير PDF بنجاح', 'success');
+      }, 500);
+    }
     // ============================================
     // UTILS
     // ============================================
