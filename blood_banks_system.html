@@ -9,6 +9,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     body { font-family: 'Cairo', sans-serif; }
     .fade-in { animation: fadeIn 0.4s ease-out; }
@@ -686,25 +687,71 @@
       }, 500);
     }
 
-    function exportAdminToPDF() {
+    async function exportAdminToPDF() {
       showLoading(true);
-      setTimeout(() => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-        doc.setFillColor(30, 41, 59); doc.rect(0, 0, 297, 22, 'F');
-        doc.setTextColor(255, 255, 255); doc.setFontSize(16);
-        doc.text('Dashboard بنوك الدم - محافظة الدقهلية', 148.5, 14, { align: 'center' });
-        doc.setFontSize(11);
-        doc.text('إجمالي البنوك: ' + BANKS.length + ' | إجمالي الأجهزة: ' + allDevices.length, 148.5, 20, { align: 'center' });
-        const body = BANKS.map((bank, i) => {
+      try {
+        const cap = document.getElementById('pdf-capture-area');
+        let html = '<div style="text-align:center;margin-bottom:20px;">';
+        html += '<h1 style="color:#b91c1c;font-size:22px;margin:0;">Dashboard بنوك الدم - محافظة الدقهلية</h1>';
+        html += '<p style="color:#64748b;font-size:14px;margin:5px 0 0;">إجمالي البنوك: ' + BANKS.length + ' | إجمالي الأجهزة: ' + allDevices.length + '</p>';
+        html += '</div>';
+        html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+        html += '<thead><tr style="background:#1e293b;color:#fff;">';
+        html += '<th style="padding:8px;border:1px solid #ccc;">#</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">اسم البنك</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">الكود</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">الأجهزة</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">الأعطال</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">عقود</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">بدائل</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">كروت</th>';
+        html += '</tr></thead><tbody>';
+        BANKS.forEach((bank, i) => {
           const bankDevs = allDevices.filter(d => d.bankId === bank.id);
-          return [i + 1, bank.name, bank.code, bankDevs.length, bankDevs.filter(d => d.issues === 'يوجد').length, bankDevs.filter(d => d.contract === 'يوجد').length, bankDevs.filter(d => d.spare === 'يوجد').length, bankDevs.filter(d => d.idCard === 'يوجد').length];
+          const bg = i % 2 === 0 ? '#f8fafc' : '#fff';
+          html += '<tr style="background:' + bg + ';">';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;">' + (i+1) + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;">' + escapeHtml(bank.name) + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;font-family:monospace;">' + bank.code + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;font-weight:bold;">' + bankDevs.length + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;">' + bankDevs.filter(d => d.issues === 'يوجد').length + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;">' + bankDevs.filter(d => d.contract === 'يوجد').length + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;">' + bankDevs.filter(d => d.spare === 'يوجد').length + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;">' + bankDevs.filter(d => d.idCard === 'يوجد').length + '</td>';
+          html += '</tr>';
         });
-        doc.autoTable({ head: [['#', 'اسم البنك', 'الكود', 'الأجهزة', 'الأعطال', 'عقود', 'بدائل', 'كروت']], body: body, startY: 28, theme: 'grid', headStyles: { fillColor: [30, 41, 59], textColor: 255, fontStyle: 'bold', halign: 'center' }, bodyStyles: { halign: 'center', fontSize: 9 }, alternateRowStyles: { fillColor: [241, 245, 249] }, styles: { font: 'helvetica', cellPadding: 2 } });
-        doc.save('بنوك_الدم_الدقهلية_Dashboard.pdf');
-        showLoading(false);
+        html += '</tbody></table>';
+        cap.innerHTML = html;
+
+        const canvas = await html2canvas(cap, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 800 });
+        const { jsPDF } = window.jspdf;
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+        const imgX = (pdfWidth - imgWidth * ratio) / 2;
+        let imgY = 10;
+        let heightLeft = imgHeight * ratio;
+        let position = imgY;
+        pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, imgHeight * ratio);
+        heightLeft -= pdfHeight - 20;
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight * ratio + imgY;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, imgHeight * ratio);
+          heightLeft -= pdfHeight - 20;
+        }
+        pdf.save('بنوك_الدم_الدقهلية_Dashboard.pdf');
+        cap.innerHTML = '';
         showToast('تم تصدير PDF بنجاح', 'success');
-      }, 500);
+      } catch (err) {
+        showToast('حدث خطأ أثناء التصدير', 'error');
+        console.error(err);
+      }
+      showLoading(false);
     }
 
     // ============================================
@@ -895,26 +942,80 @@
       }, 500);
     }
 
-    function exportBankToPDF() {
+    async function exportBankToPDF() {
       showLoading(true);
-      setTimeout(() => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      try {
         const bank = BANKS.find(b => b.id === currentBankId);
         const devices = getBankDevices();
-        doc.setFillColor(185, 28, 28); doc.rect(0, 0, 297, 22, 'F');
-        doc.setTextColor(255, 255, 255); doc.setFontSize(16);
-        doc.text(bank.name + ' - ' + bank.code, 148.5, 14, { align: 'center' });
-        doc.setFontSize(11);
-        doc.text('سجل الأجهزة الطبية', 148.5, 20, { align: 'center' });
-        const body = devices.map((d, i) => [i + 1, d.name, d.code, d.serial, d.brand, d.model, d.spare, d.idCard, d.log, d.contract, d.maintDate || '-', d.issues]);
-        doc.autoTable({ head: [['#', 'اسم الجهاز', 'الكود', 'الرقم التسلسلي', 'الماركة', 'الموديل', 'البديل', 'كارت', 'سجل', 'عقد', 'صيانة', 'أعطال']], body: body, startY: 28, theme: 'grid', headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' }, bodyStyles: { halign: 'center', fontSize: 8 }, alternateRowStyles: { fillColor: [254, 242, 242] }, styles: { font: 'helvetica', cellPadding: 2 } });
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) { doc.setPage(i); doc.setFontSize(8); doc.setTextColor(100, 100, 100); doc.text('صفحة ' + i + ' من ' + pageCount, 148.5, 210 - 5, { align: 'center' }); }
-        doc.save(bank.code + '_الأجهزة.pdf');
-        showLoading(false);
+        const cap = document.getElementById('pdf-capture-area');
+        let html = '<div style="text-align:center;margin-bottom:20px;">';
+        html += '<h1 style="color:#b91c1c;font-size:22px;margin:0;">' + escapeHtml(bank.name) + '</h1>';
+        html += '<p style="color:#64748b;font-size:14px;margin:5px 0 0;">كود ' + bank.code + ' | إجمالي الأجهزة: ' + devices.length + '</p>';
+        html += '</div>';
+        html += '<table style="width:100%;border-collapse:collapse;font-size:11px;">';
+        html += '<thead><tr style="background:#b91c1c;color:#fff;">';
+        html += '<th style="padding:6px;border:1px solid #ccc;">#</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">اسم الجهاز</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">الكود</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">الرقم التسلسلي</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">الماركة</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">الموديل</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">البديل</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">كارت</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">سجل</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">عقد</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">صيانة</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">أعطال</th>';
+        html += '</tr></thead><tbody>';
+        devices.forEach((dev, i) => {
+          const bg = i % 2 === 0 ? '#fff' : '#fef2f2';
+          html += '<tr style="background:' + bg + ';">';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + (i+1) + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;">' + escapeHtml(dev.name) + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;font-family:monospace;">' + escapeHtml(dev.code) + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;font-family:monospace;">' + escapeHtml(dev.serial) + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + escapeHtml(dev.brand) + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + escapeHtml(dev.model) + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + dev.spare + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + dev.idCard + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + dev.log + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + dev.contract + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + (dev.maintDate || '-') + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + dev.issues + '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+        cap.innerHTML = html;
+
+        const canvas = await html2canvas(cap, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 800 });
+        const { jsPDF } = window.jspdf;
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+        const imgX = (pdfWidth - imgWidth * ratio) / 2;
+        let imgY = 10;
+        let heightLeft = imgHeight * ratio;
+        let position = imgY;
+        pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, imgHeight * ratio);
+        heightLeft -= pdfHeight - 20;
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight * ratio + imgY;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, imgHeight * ratio);
+          heightLeft -= pdfHeight - 20;
+        }
+        pdf.save(bank.code + '_الأجهزة.pdf');
+        cap.innerHTML = '';
         showToast('تم تصدير PDF بنجاح', 'success');
-      }, 500);
+      } catch (err) {
+        showToast('حدث خطأ أثناء التصدير', 'error');
+        console.error(err);
+      }
+      showLoading(false);
     }
 
     // ============================================
@@ -947,5 +1048,9 @@
       document.getElementById('loading-overlay').classList.toggle('hidden', !show);
     }
   </script>
+
+  <!-- Hidden PDF capture area -->
+  <div id="pdf-capture-area" style="position:absolute;left:-9999px;top:0;width:800px;background:#fff;padding:20px;direction:rtl;font-family:'Cairo',sans-serif;"></div>
+
 </body>
 </html>
