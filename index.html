@@ -3,277 +3,323 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>سجل أجهزة بنك دم دكرنس - كود 177</title>
+  <title>نظام إدارة بنوك الدم - محافظة الدقهلية</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     body { font-family: 'Cairo', sans-serif; }
     .fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.12); }
+    .page { display: none; }
+    .page.active { display: block; animation: fadeIn 0.4s ease-out; }
+    .shake { animation: shake 0.5s; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body class="bg-slate-50 min-h-screen">
 
-  <!-- Top Bar -->
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex items-center justify-between h-16">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-xl flex items-center justify-center shadow-md">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <!-- ====== LOGIN PAGE ====== -->
+  <div id="page-login" class="page active">
+    <div class="min-h-screen flex items-center justify-center px-4 py-12 bg-gradient-to-br from-slate-100 to-slate-200">
+      <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+          <div class="w-20 h-20 bg-gradient-to-br from-red-600 to-red-800 rounded-2xl flex items-center justify-center shadow-xl mx-auto mb-4">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
             </svg>
           </div>
-          <div>
-            <h1 class="text-lg font-bold text-slate-800">بنك دم دكرنس</h1>
-            <p class="text-xs text-slate-500">كود 177 - سجل الأجهزة الطبية</p>
-          </div>
+          <h1 class="text-2xl font-extrabold text-slate-800">نظام إدارة بنوك الدم</h1>
+          <p class="text-slate-500 mt-1">محافظة الدقهلية - مديرية الشؤون الصحية</p>
         </div>
-        <div class="flex items-center gap-3">
-          <span class="text-sm font-medium text-slate-600 hidden sm:block">نظام إدارة الأجهزة</span>
-        </div>
-      </div>
-    </div>
-  </header>
 
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 fade-in">
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-slate-500 mb-1">إجمالي الأجهزة</p>
-            <p id="stat-total" class="text-3xl font-bold text-slate-800">0</p>
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+          <div class="flex border-b border-slate-200">
+            <button id="tab-bank" onclick="switchLoginTab('bank')" class="flex-1 py-4 text-center font-bold text-red-700 bg-red-50 border-b-2 border-red-600 transition-all">
+              🏥 دخول موظف بنك
+            </button>
+            <button id="tab-admin" onclick="switchLoginTab('admin')" class="flex-1 py-4 text-center font-medium text-slate-500 hover:text-slate-700 transition-all">
+              📊 دخول الإدارة
+            </button>
           </div>
-          <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-slate-500 mb-1">بديل موجود</p>
-            <p id="stat-spare" class="text-3xl font-bold text-emerald-600">0</p>
-          </div>
-          <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-slate-500 mb-1">كارت تعريف</p>
-            <p id="stat-card" class="text-3xl font-bold text-amber-600">0</p>
-          </div>
-          <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm text-slate-500 mb-1">عقد صيانة</p>
-            <p id="stat-contract" class="text-3xl font-bold text-purple-600">0</p>
-          </div>
-          <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Search, Export & Add -->
-    <div class="flex flex-col lg:flex-row gap-3 mb-6">
-      <div class="flex-1 relative">
-        <svg class="w-5 h-5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
-        <input type="text" id="search-input" oninput="searchDevices()" class="w-full pr-10 pl-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" placeholder="البحث بالاسم أو الكود أو الرقم التسلسلي...">
-      </div>
-      <div class="flex gap-2 flex-wrap">
-        <button onclick="exportToExcel()" class="px-5 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          تصدير Excel
-        </button>
-        <button onclick="exportToPDF()" class="px-5 py-3 bg-rose-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-          تصدير PDF
-        </button>
-        <button onclick="openModal()" class="px-6 py-3 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-          </svg>
-          إضافة جهاز جديد
-        </button>
-      </div>
-    </div>
+          <!-- Bank Login -->
+          <div id="login-bank-panel" class="p-6">
+            <form onsubmit="handleBankLogin(event)">
+              <div class="mb-4">
+                <label class="block text-sm font-bold text-slate-700 mb-2">كود البنك</label>
+                <select id="login-bank-code" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white text-lg">
+                  <option value="">اختر البنك...</option>
+                </select>
+              </div>
+              <div class="mb-4">
+                <label class="block text-sm font-bold text-slate-700 mb-2">كلمة المرور</label>
+                <input type="password" id="login-bank-password" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right text-lg" placeholder="كلمة المرور">
+                <p class="text-xs text-slate-400 mt-1">الباسوورد الافتراضي = كود البنك</p>
+              </div>
+              <button type="submit" class="w-full py-3 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl font-bold text-lg hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98]">
+                تسجيل الدخول
+              </button>
+            </form>
+          </div>
 
-    <!-- Devices Table -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full text-right">
-          <thead class="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">#</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">اسم الجهاز</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الكود</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الرقم التسلسلي</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الماركة</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الموديل</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">البديل</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">كارت التعريف</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">سجل الجهاز</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">عقد صيانة</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">تاريخ الصيانة</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الأعطال</th>
-              <th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody id="devices-table-body" class="divide-y divide-slate-100">
-          </tbody>
-        </table>
-      </div>
-      <div id="empty-state" class="hidden py-16 text-center">
-        <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
-          </svg>
+          <!-- Admin Login (hidden by default) -->
+          <div id="login-admin-panel" class="p-6 hidden">
+            <form onsubmit="handleAdminLogin(event)">
+              <div class="mb-4">
+                <label class="block text-sm font-bold text-slate-700 mb-2">اسم المستخدم</label>
+                <input type="text" id="login-admin-user" value="admin" readonly class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 text-right text-lg cursor-not-allowed">
+              </div>
+              <div class="mb-4">
+                <label class="block text-sm font-bold text-slate-700 mb-2">كلمة المرور</label>
+                <input type="password" id="login-admin-password" class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-slate-700 focus:ring-2 focus:ring-slate-300 outline-none transition-all text-right text-lg" placeholder="كلمة المرور">
+                <p class="text-xs text-slate-400 mt-1">الباسوورد الافتراضي = admin</p>
+              </div>
+              <button type="submit" class="w-full py-3 bg-gradient-to-r from-slate-700 to-slate-900 text-white rounded-xl font-bold text-lg hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98]">
+                دخول الإدارة
+              </button>
+            </form>
+          </div>
         </div>
-        <p class="text-slate-500 font-medium">لا توجد أجهزة مسجلة بعد</p>
+
+        <p class="text-center text-xs text-slate-400 mt-6">© 2026 مديرية الشؤون الصحية - الدقهلية</p>
       </div>
     </div>
   </div>
 
-  <!-- Add/Edit Modal -->
-  <div id="device-modal" class="hidden fixed inset-0 z-[100] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <!-- ====== ADMIN DASHBOARD ====== -->
+  <div id="page-admin" class="page">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-slate-700 to-slate-900 rounded-xl flex items-center justify-center shadow-md">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            </div>
+            <div>
+              <h1 class="text-lg font-bold text-slate-800">Dashboard الإدارة العليا</h1>
+              <p class="text-xs text-slate-500">محافظة الدقهلية - بنوك الدم</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="openChangePasswordModal()" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+              تغيير الباسوورد
+            </button>
+            <button onclick="logout()" class="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              تسجيل الخروج
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 fade-in">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div><p class="text-sm text-slate-500 mb-1">إجمالي البنوك</p><p id="admin-total-banks" class="text-3xl font-bold text-slate-800">0</p></div>
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center"><svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg></div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div><p class="text-sm text-slate-500 mb-1">إجمالي الأجهزة</p><p id="admin-total-devices" class="text-3xl font-bold text-slate-800">0</p></div>
+            <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center"><svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg></div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div><p class="text-sm text-slate-500 mb-1">الأعطال المسجلة</p><p id="admin-total-issues" class="text-3xl font-bold text-red-600">0</p></div>
+            <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center"><svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <div><p class="text-sm text-slate-500 mb-1">عقود الصيانة</p><p id="admin-total-contracts" class="text-3xl font-bold text-purple-600">0</p></div>
+            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center"><svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 class="text-lg font-bold text-slate-800">ملخص البنوك</h2>
+          <div class="flex gap-2">
+            <button onclick="exportAdminToExcel()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Excel</button>
+            <button onclick="exportAdminToPDF()" class="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-semibold hover:bg-rose-700 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>PDF</button>
+          </div>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-right">
+            <thead class="bg-slate-50 border-b border-slate-200">
+              <tr><th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase">#</th><th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase">اسم البنك</th><th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase">الكود</th><th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase">الأجهزة</th><th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase">الأعطال</th><th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase">عقود الصيانة</th><th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase">البدائل</th><th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase">كروت التعريف</th><th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase">الإجراءات</th></tr>
+            </thead>
+            <tbody id="admin-banks-table" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== BANK PAGE ====== -->
+  <div id="page-bank" class="page">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-xl flex items-center justify-center shadow-md">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+            </div>
+            <div>
+              <h1 id="bank-title" class="text-lg font-bold text-slate-800">بنك دم</h1>
+              <p id="bank-subtitle" class="text-xs text-slate-500">كود --</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="openChangePasswordModal()" class="px-3 py-2 text-sm font-medium text-slate-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+              تغيير الباسوورد
+            </button>
+            <button onclick="logout()" class="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+              تسجيل الخروج
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 fade-in">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <div><p class="text-sm text-slate-500 mb-1">إجمالي الأجهزة</p><p id="stat-total" class="text-3xl font-bold text-slate-800">0</p></div>
+            <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center"><svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg></div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <div><p class="text-sm text-slate-500 mb-1">بديل موجود</p><p id="stat-spare" class="text-3xl font-bold text-emerald-600">0</p></div>
+            <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center"><svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg></div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <div><p class="text-sm text-slate-500 mb-1">كارت تعريف</p><p id="stat-card" class="text-3xl font-bold text-amber-600">0</p></div>
+            <div class="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center"><svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/></svg></div>
+          </div>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <div class="flex items-center justify-between">
+            <div><p class="text-sm text-slate-500 mb-1">عقد صيانة</p><p id="stat-contract" class="text-3xl font-bold text-purple-600">0</p></div>
+            <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center"><svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col lg:flex-row gap-3 mb-6">
+        <div class="flex-1 relative">
+          <svg class="w-5 h-5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input type="text" id="search-input" oninput="searchDevices()" class="w-full pr-10 pl-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" placeholder="البحث بالاسم أو الكود أو الرقم التسلسلي...">
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <button onclick="exportBankToExcel()" class="px-5 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>تصدير Excel</button>
+          <button onclick="exportBankToPDF()" class="px-5 py-3 bg-rose-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>تصدير PDF</button>
+          <button onclick="openModal()" class="px-6 py-3 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>إضافة جهاز</button>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-right">
+            <thead class="bg-slate-50 border-b border-slate-200">
+              <tr><th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">#</th><th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">اسم الجهاز</th><th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الكود</th><th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الرقم التسلسلي</th><th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الماركة</th><th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الموديل</th><th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">البديل</th><th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">كارت التعريف</th><th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">سجل الجهاز</th><th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">عقد صيانة</th><th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">تاريخ الصيانة</th><th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الأعطال</th><th class="px-4 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wider">الإجراءات</th></tr>
+            </thead>
+            <tbody id="devices-table-body" class="divide-y divide-slate-100"></tbody>
+          </table>
+        </div>
+        <div id="empty-state" class="hidden py-16 text-center">
+          <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4"><svg class="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/></svg></div>
+          <p class="text-slate-500 font-medium">لا توجد أجهزة مسجلة بعد</p>
+          <button onclick="openModal()" class="mt-3 text-red-600 font-semibold hover:underline">أضف أول جهاز</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== ADD/EDIT MODAL ====== -->
+  <div id="device-modal" class="hidden fixed inset-0 z-[100] overflow-y-auto">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
       <div class="fixed inset-0 bg-slate-900/50 transition-opacity backdrop-blur-sm" onclick="closeModal()"></div>
-      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
       <div class="inline-block align-bottom bg-white rounded-2xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
         <div class="bg-gradient-to-r from-red-700 to-red-900 px-6 py-4 flex items-center justify-between">
           <h3 id="modal-title" class="text-lg font-bold text-white">إضافة جهاز جديد</h3>
-          <button onclick="closeModal()" class="text-white/80 hover:text-white transition-colors">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
+          <button onclick="closeModal()" class="text-white/80 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
         </div>
         <form id="device-form" onsubmit="saveDevice(event)" class="p-6">
           <input type="hidden" id="device-id">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div class="md:col-span-2">
-              <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
-                <span class="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs">1</span>
-                البيانات الأساسية
-              </h4>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">اسم الجهاز <span class="text-red-500">*</span></label>
-              <input type="text" id="dev-name" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" required>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">الكود <span class="text-red-500">*</span></label>
-              <input type="text" id="dev-code" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" required>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">الرقم التسلسلي</label>
-              <input type="text" id="dev-serial" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">الماركة</label>
-              <input type="text" id="dev-brand" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">الموديل</label>
-              <input type="text" id="dev-model" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right">
-            </div>
-
-            <div class="md:col-span-2 mt-2">
-              <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
-                <span class="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs">2</span>
-                حالة الجهاز
-              </h4>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">البديل</label>
-              <select id="dev-spare" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white">
-                <option value="لا يوجد">لا يوجد</option>
-                <option value="يوجد">يوجد</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">كارت التعريف</label>
-              <select id="dev-idcard" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white">
-                <option value="لا يوجد">لا يوجد</option>
-                <option value="يوجد">يوجد</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">سجل الجهاز</label>
-              <select id="dev-log" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white">
-                <option value="لا يوجد">لا يوجد</option>
-                <option value="يوجد">يوجد</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">عقد الصيانة</label>
-              <select id="dev-contract" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white">
-                <option value="لا يوجد">لا يوجد</option>
-                <option value="يوجد">يوجد</option>
-              </select>
-            </div>
-
-            <div class="md:col-span-2 mt-2">
-              <h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
-                <span class="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs">3</span>
-                التواريخ والأعطال
-              </h4>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">تاريخ الصيانة</label>
-              <input type="date" id="dev-maint-date" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">تاريخ التشغيل</label>
-              <input type="date" id="dev-oper-date" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">تاريخ التركيب</label>
-              <input type="date" id="dev-install-date" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right">
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">الأعطال</label>
-              <select id="dev-issues" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white">
-                <option value="لا يوجد">لا يوجد</option>
-                <option value="يوجد">يوجد</option>
-              </select>
-            </div>
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">ملاحظات</label>
-              <textarea id="dev-notes" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right resize-none"></textarea>
-            </div>
+            <div class="md:col-span-2"><h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs">1</span>البيانات الأساسية</h4></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1.5">اسم الجهاز <span class="text-red-500">*</span></label><input type="text" id="dev-name" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" required></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1.5">الكود <span class="text-red-500">*</span></label><input type="text" id="dev-code" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" required></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1.5">الرقم التسلسلي</label><input type="text" id="dev-serial" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right"></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1.5">الماركة</label><input type="text" id="dev-brand" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right"></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1.5">الموديل</label><input type="text" id="dev-model" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right"></div>
+            <div class="md:col-span-2 mt-2"><h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs">2</span>حالة الجهاز</h4></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1.5">البديل</label><select id="dev-spare" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white"><option value="لا يوجد">لا يوجد</option><option value="يوجد">يوجد</option></select></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1.5">كارت التعريف</label><select id="dev-idcard" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white"><option value="لا يوجد">لا يوجد</option><option value="يوجد">يوجد</option></select></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1.5">سجل الجهاز</label><select id="dev-log" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white"><option value="لا يوجد">لا يوجد</option><option value="يوجد">يوجد</option></select></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1.5">عقد الصيانة</label><select id="dev-contract" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white"><option value="لا يوجد">لا يوجد</option><option value="يوجد">يوجد</option></select></div>
+            <div class="md:col-span-2 mt-2"><h4 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-red-100 text-red-700 flex items-center justify-center text-xs">3</span>التواريخ والأعطال</h4></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1.5">تاريخ الصيانة</label><input type="date" id="dev-maint-date" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right"></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1.5">تاريخ التشغيل</label><input type="date" id="dev-oper-date" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right"></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1.5">تاريخ التركيب</label><input type="date" id="dev-install-date" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right"></div>
+            <div><label class="block text-sm font-medium text-slate-700 mb-1.5">الأعطال</label><select id="dev-issues" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white"><option value="لا يوجد">لا يوجد</option><option value="يوجد">يوجد</option></select></div>
+            <div class="md:col-span-2"><label class="block text-sm font-medium text-slate-700 mb-1.5">ملاحظات</label><textarea id="dev-notes" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right resize-none"></textarea></div>
           </div>
           <div class="mt-6 flex gap-3 justify-end">
-            <button type="button" onclick="closeModal()" class="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors">
-              إلغاء
-            </button>
-            <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl font-medium hover:shadow-lg transition-all">
-              حفظ الجهاز
-            </button>
+            <button type="button" onclick="closeModal()" class="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors">إلغاء</button>
+            <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl font-medium hover:shadow-lg transition-all">حفظ الجهاز</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== CHANGE PASSWORD MODAL ====== -->
+  <div id="password-modal" class="hidden fixed inset-0 z-[100] overflow-y-auto">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-slate-900/50 transition-opacity backdrop-blur-sm" onclick="closePasswordModal()"></div>
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+      <div class="inline-block align-bottom bg-white rounded-2xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+        <div class="bg-gradient-to-r from-slate-700 to-slate-900 px-6 py-4 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-white">تغيير كلمة المرور</h3>
+          <button onclick="closePasswordModal()" class="text-white/80 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        </div>
+        <form onsubmit="changePassword(event)" class="p-6">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">كلمة المرور الحالية</label>
+            <input type="password" id="current-password" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" required>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">كلمة المرور الجديدة</label>
+            <input type="password" id="new-password" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" required minlength="3">
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">تأكيد كلمة المرور الجديدة</label>
+            <input type="password" id="confirm-password" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" required minlength="3">
+          </div>
+          <div class="flex gap-3 justify-end">
+            <button type="button" onclick="closePasswordModal()" class="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors">إلغاء</button>
+            <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-slate-700 to-slate-900 text-white rounded-xl font-medium hover:shadow-lg transition-all">حفظ التغيير</button>
           </div>
         </form>
       </div>
@@ -282,131 +328,472 @@
 
   <!-- Toast -->
   <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] px-6 py-3 rounded-xl shadow-xl text-white font-medium transition-all transform translate-y-10 opacity-0"></div>
-
   <!-- Loading -->
   <div id="loading-overlay" class="hidden fixed inset-0 z-[120] bg-white/80 backdrop-blur-sm flex items-center justify-center">
-    <div class="flex flex-col items-center gap-3">
-      <div class="w-12 h-12 border-4 border-red-200 border-t-red-700 rounded-full animate-spin"></div>
-      <p class="text-slate-600 font-medium">جاري التحميل...</p>
-    </div>
+    <div class="flex flex-col items-center gap-3"><div class="w-12 h-12 border-4 border-red-200 border-t-red-700 rounded-full animate-spin"></div><p class="text-slate-600 font-medium">جاري التحميل...</p></div>
   </div>
 
   <script>
+
     // ============================================
-    // REAL DEVICES DATA FROM WORD FILE
+    // BANKS DATA
     // ============================================
+    const BANKS = [
+      { id: "H169", name: "بنك دم المنصورة العام القديم", code: "H169", location: "المنصورة" },
+      { id: "H170", name: "بنك دم بلقاس المركزي", code: "H170", location: "بلقاس" },
+      { id: "H171", name: "بنك دم المطرية المركزي", code: "H171", location: "المطرية" },
+      { id: "H172", name: "بنك دم نبروة المركزي", code: "H172", location: "نبروة" },
+      { id: "H173", name: "بنك دم منية النصر المركزي", code: "H173", location: "منية النصر" },
+      { id: "H174", name: "بنك دم أجا المركزي", code: "H174", location: "أجا" },
+      { id: "H175", name: "بنك دم ميت غمر المركزي", code: "H175", location: "ميت غمر" },
+      { id: "H176", name: "بنك دم السنبلاوين العام", code: "H176", location: "السنبلاوين" },
+      { id: "H177", name: "بنك دم دكرنس العام", code: "H177", location: "دكرنس" },
+      { id: "H178", name: "بنك دم المنزلة المركزي", code: "H178", location: "المنزلة" },
+      { id: "H179", name: "بنك دم شربين المركزي", code: "H179", location: "شربين" },
+      { id: "H180", name: "بنك دم طلخا المركزي", code: "H180", location: "طلخا" },
+      { id: "H181", name: "بنك دم الجمالية المركزي", code: "H181", location: "الجمالية" },
+      { id: "H182", name: "بنك دم ميت سلسيل المركزي", code: "H182", location: "ميت سلسيل" },
+      { id: "H183", name: "بنك دم نماص المركزي", code: "H183", location: "نماص" },
+      { id: "H185", name: "بنك دم تمي الامديد المركزي", code: "H185", location: "تمي الامديد" },
+      { id: "H186", name: "بنك دم شيراهور المركزي", code: "H186", location: "شيراهور" },
+      { id: "H187", name: "بنك دم أتميدة المركزي", code: "H187", location: "أتميدة" },
+      { id: "H188", name: "بنك دم جمهضة المركزي", code: "H188", location: "جمهضة" }
+    ];
+
     const DEFAULT_DEVICES = [
-      { id: "dev-001", name: "ثلاجه دم تحت الفحص (الكترولوكس)", code: "F 01H177", serial: "9195016", brand: "الكترولوكس", model: "MRB 1200", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-03-25", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-002", name: "ثلاجه دم تحت الفحص (الكترولوكس)", code: "F 02H177", serial: "9195018", brand: "الكترولوكس", model: "MRB 600", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2000-03-25", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-003", name: "فريزر بلازما تحت الفحص (ميد فيوتشر)", code: "DF 01H177", serial: "G1701002309BDF", brand: "ميد فيوتشر", model: "BDF-10V268", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2018-11-26", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-004", name: "ثلاجه حفظ كيماويات الكنرولوكس", code: "F 03H177", serial: "9275041", brand: "الكنرولوكس", model: "MRL 600", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-03-25", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-005", name: "ثلاجه دم محفوظ (فرايمد)", code: "F 04H177", serial: "FF0737FMK0714", brand: "فرايمد", model: "FS15E", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "2026-07-20", operDate: "2017-05-31", installDate: "", issues: "يوجد", notes: "" },
-      { id: "dev-006", name: "فريزر كريازي 5 درج بلازما مفحوص", code: "DF 02H177", serial: "E2305061506000", brand: "كريازي", model: "E230N5/3", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2017-05-31", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-007", name: "ديب فريزر كريازي 6 درج بلازما مفحوصه", code: "DF 03H177", serial: "E2506061506000", brand: "كريازي", model: "E250N6/3", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2017-05-31", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-008", name: "فريزر شارب راسي 6 درج بلازما مفحوصه", code: "DF 04H177", serial: "K473TEA11193L5", brand: "شارب", model: "EJ-EC27", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2024-12-25", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-009", name: "ثلاجه دم مفحوص (ميد فيوتشر)", code: "F 05H177", serial: "XC025025180005", brand: "ميد فيوتشر", model: "BXC-V250B", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2019-03-28", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-010", name: "فريزر كريازي 4 درج بلازما مفحوصه", code: "DF 06H177", serial: "533585258", brand: "كريازي", model: "E210ND413", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2017-05-31", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-011", name: "ديب فريزر ماركه( الكترولوكس)", code: "DF 07H177", serial: "9285012", brand: "الكترولوكس", model: "MRF 400/35", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-03-25", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-012", name: "ثلاجه (هاير)", code: "F 06H177", serial: "08", brand: "هاير", model: "HXC-158", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2015-05-11", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-013", name: "ثلاجه (فوستر)", code: "F 07H177", serial: "69744", brand: "فوستر", model: "75", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "2026-07-20", operDate: "", installDate: "", issues: "يوجد", notes: "" },
-      { id: "dev-014", name: "ثلاجه كريازي", code: "F 08H177", serial: "E2407061506000", brand: "كريازي", model: "L310/K330", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-015", name: "ثلاجه الاعدام", code: "F 09 H177", serial: "RF202510130789", brand: "الاعدام", model: "RFC-320DX", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2014-09-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-016", name: "هيموجلوبين", code: "HB 01H177", serial: "9915003124", brand: "B-HEMOGLOBIN", model: "B-HEMOGLOBIN", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-017", name: "هيموجلوبين", code: "HB 02H177", serial: "9649002021", brand: "B-HEMOGLOIN", model: "B-HEMOGLOIN", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-018", name: "هيموجلوبين", code: "HB 03H177", serial: "2411821311", brand: "HEMOCUE", model: "HEMOCUE", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2025-09-28", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-019", name: "ميكروسكوب", code: "M 01H177", serial: "9907930", brand: "AIC", model: "AIC", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-020", name: "ميكروسكوب", code: "M 02H177", serial: "9916016", brand: "AIC", model: "AIC", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-021", name: "ميكروسكوب", code: "M 03H177", serial: "303017", brand: "MBL-2000", model: "MBL-2000", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-022", name: "سنترفيوج", code: "CFS 01H177", serial: "799110083", brand: "PK130", model: "PK130", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "2026-07-04", operDate: "2001-01-01", installDate: "", issues: "يوجد", notes: "" },
-      { id: "dev-023", name: "سنترفيوج", code: "CFS 02H177", serial: "799110303", brand: "42CM", model: "42CM", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-024", name: "سنترفيوج", code: "CFS 03H177", serial: "799110079", brand: "PK130", model: "PK130", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-025", name: "سنترفيوج", code: "CFC 01H177", serial: "9000020792", brand: "CENTRIFUGE65", model: "CENTRIFUGE65", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2000-01-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-026", name: "سنترفيوج", code: "CFS 04H177", serial: "QE039394", brand: "CAPPRONDO", model: "CAPPRONDO", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2023-01-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-027", name: "حضانة + سنترفيوج", code: "CIN 01H177", serial: "61001958", brand: "ORTHO CLINICAL DIAGNOSTICS", model: "ORTHO CLINICAL DIAGNOSTICS", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2018-01-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-028", name: "هزاز فصل يدوي", code: "CFU 02H177", serial: "-", brand: "ACS-201", model: "ACS-201", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2014-01-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-029", name: "هزاز فصل يدوي", code: "CFU 03H177", serial: "140704", brand: "ACS-201", model: "ACS-201", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2014-01-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-030", name: "سنترفيوج فصل الدم", code: "CFU 01H177", serial: "912110003", brand: "20007001", model: "20007001", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2013-09-12", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-031", name: "حضانة كروت", code: "CIN 01H177", serial: "193-2092", brand: "SP32", model: "SP32", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2017-01-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-032", name: "فرن تعقيم", code: "AC 01H177", serial: "-", brand: "", model: "", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2012-05-01", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-033", name: "ميزان وهزاز دم", code: "CH 01H177", serial: "76014404", brand: "CM760", model: "CM760", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2023-02-10", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-034", name: "ميزان وهزاز دم", code: "CH 02H177", serial: "76014328", brand: "CM7560", model: "CM7560", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2023-02-11", installDate: "", issues: "لا يوجد", notes: "" },
-      { id: "dev-035", name: "جهاز لحام", code: "SL 01H177", serial: "53358928", brand: "Rapid SE AU ll", model: "Rapid SE AU ll", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "", installDate: "", issues: "لا يوجد", notes: "" }
+      { id: "dev-001", bankId: "H177", name: "ثلاجه دم تحت الفحص (الكترولوكس)", code: "F 01H177", serial: "9195016", brand: "الكترولوكس", model: "MRB 1200", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-03-25", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-002", bankId: "H177", name: "ثلاجه دم تحت الفحص (الكترولوكس)", code: "F 02H177", serial: "9195018", brand: "الكترولوكس", model: "MRB 600", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2000-03-25", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-003", bankId: "H177", name: "فريزر بلازما تحت الفحص (ميد فيوتشر)", code: "DF 01H177", serial: "G1701002309BDF", brand: "ميد فيوتشر", model: "BDF-10V268", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2018-11-26", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-004", bankId: "H177", name: "ثلاجه حفظ كيماويات الكنرولوكس", code: "F 03H177", serial: "9275041", brand: "الكنرولوكس", model: "MRL 600", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-03-25", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-005", bankId: "H177", name: "ثلاجه دم محفوظ (فرايمد)", code: "F 04H177", serial: "FF0737FMK0714", brand: "فرايمد", model: "FS15E", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "2026-07-20", operDate: "2017-05-31", installDate: "", issues: "يوجد", notes: "" },
+      { id: "dev-006", bankId: "H177", name: "فريزر كريازي 5 درج بلازما مفحوص", code: "DF 02H177", serial: "E2305061506000", brand: "كريازي", model: "E230N5/3", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2017-05-31", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-007", bankId: "H177", name: "ديب فريزر كريازي 6 درج بلازما مفحوصه", code: "DF 03H177", serial: "E2506061506000", brand: "كريازي", model: "E250N6/3", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2017-05-31", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-008", bankId: "H177", name: "فريزر شارب راسي 6 درج بلازما مفحوصه", code: "DF 04H177", serial: "K473TEA11193L5", brand: "شارب", model: "EJ-EC27", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2024-12-25", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-009", bankId: "H177", name: "ثلاجه دم مفحوص (ميد فيوتشر)", code: "F 05H177", serial: "XC025025180005", brand: "ميد فيوتشر", model: "BXC-V250B", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2019-03-28", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-010", bankId: "H177", name: "فريزر كريازي 4 درج بلازما مفحوصه", code: "DF 06H177", serial: "533585258", brand: "كريازي", model: "E210ND413", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2017-05-31", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-011", bankId: "H177", name: "ديب فريزر ماركه( الكترولوكس)", code: "DF 07H177", serial: "9285012", brand: "الكترولوكس", model: "MRF 400/35", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-03-25", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-012", bankId: "H177", name: "ثلاجه (هاير)", code: "F 06H177", serial: "08", brand: "هاير", model: "HXC-158", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2015-05-11", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-013", bankId: "H177", name: "ثلاجه (فوستر)", code: "F 07H177", serial: "69744", brand: "فوستر", model: "75", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "2026-07-20", operDate: "", installDate: "", issues: "يوجد", notes: "" },
+      { id: "dev-014", bankId: "H177", name: "ثلاجه كريازي", code: "F 08H177", serial: "E2407061506000", brand: "كريازي", model: "L310/K330", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-015", bankId: "H177", name: "ثلاجه الاعدام", code: "F 09 H177", serial: "RF202510130789", brand: "الاعدام", model: "RFC-320DX", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2014-09-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-016", bankId: "H177", name: "هيموجلوبين", code: "HB 01H177", serial: "9915003124", brand: "B-HEMOGLOBIN", model: "B-HEMOGLOBIN", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-017", bankId: "H177", name: "هيموجلوبين", code: "HB 02H177", serial: "9649002021", brand: "B-HEMOGLOIN", model: "B-HEMOGLOIN", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-018", bankId: "H177", name: "هيموجلوبين", code: "HB 03H177", serial: "2411821311", brand: "HEMOCUE", model: "HEMOCUE", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2025-09-28", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-019", bankId: "H177", name: "ميكروسكوب", code: "M 01H177", serial: "9907930", brand: "AIC", model: "AIC", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-020", bankId: "H177", name: "ميكروسكوب", code: "M 02H177", serial: "9916016", brand: "AIC", model: "AIC", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-021", bankId: "H177", name: "ميكروسكوب", code: "M 03H177", serial: "303017", brand: "MBL-2000", model: "MBL-2000", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-022", bankId: "H177", name: "سنترفيوج", code: "CFS 01H177", serial: "799110083", brand: "PK130", model: "PK130", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "2026-07-04", operDate: "2001-01-01", installDate: "", issues: "يوجد", notes: "" },
+      { id: "dev-023", bankId: "H177", name: "سنترفيوج", code: "CFS 02H177", serial: "799110303", brand: "42CM", model: "42CM", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-024", bankId: "H177", name: "سنترفيوج", code: "CFS 03H177", serial: "799110079", brand: "PK130", model: "PK130", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-01-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-025", bankId: "H177", name: "سنترفيوج", code: "CFC 01H177", serial: "9000020792", brand: "CENTRIFUGE65", model: "CENTRIFUGE65", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2000-01-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-026", bankId: "H177", name: "سنترفيوج", code: "CFS 04H177", serial: "QE039394", brand: "CAPPRONDO", model: "CAPPRONDO", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2023-01-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-027", bankId: "H177", name: "حضانة + سنترفيوج", code: "CIN 01H177", serial: "61001958", brand: "ORTHO CLINICAL DIAGNOSTICS", model: "ORTHO CLINICAL DIAGNOSTICS", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2018-01-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-028", bankId: "H177", name: "هزاز فصل يدوي", code: "CFU 02H177", serial: "-", brand: "ACS-201", model: "ACS-201", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2014-01-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-029", bankId: "H177", name: "هزاز فصل يدوي", code: "CFU 03H177", serial: "140704", brand: "ACS-201", model: "ACS-201", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2014-01-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-030", bankId: "H177", name: "سنترفيوج فصل الدم", code: "CFU 01H177", serial: "912110003", brand: "20007001", model: "20007001", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2013-09-12", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-031", bankId: "H177", name: "حضانة كروت", code: "CIN 01H177", serial: "193-2092", brand: "SP32", model: "SP32", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2017-01-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-032", bankId: "H177", name: "فرن تعقيم", code: "AC 01H177", serial: "-", brand: "", model: "", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2012-05-01", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-033", bankId: "H177", name: "ميزان وهزاز دم", code: "CH 01H177", serial: "76014404", brand: "CM760", model: "CM760", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2023-02-10", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-034", bankId: "H177", name: "ميزان وهزاز دم", code: "CH 02H177", serial: "76014328", brand: "CM7560", model: "CM7560", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2023-02-11", installDate: "", issues: "لا يوجد", notes: "" },
+      { id: "dev-035", bankId: "H177", name: "جهاز لحام", code: "SL 01H177", serial: "53358928", brand: "Rapid SE AU ll", model: "Rapid SE AU ll", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "", installDate: "", issues: "لا يوجد", notes: "" }
     ];
 
     let allDevices = [];
+    let currentBankId = null;
+    let currentUser = null; // { type: 'admin'|'bank', bankId: string|null }
 
     // ============================================
-    // INIT - Load on page open (NO LOGIN)
+    // PASSWORDS MANAGEMENT
     // ============================================
-    window.onload = function() {
-      const stored = localStorage.getItem('dekernes177_devices');
-      if (stored) {
-        allDevices = JSON.parse(stored);
-      } else {
-        allDevices = JSON.parse(JSON.stringify(DEFAULT_DEVICES));
-        localStorage.setItem('dekernes177_devices', JSON.stringify(allDevices));
-      }
-      renderDevices(allDevices);
-      updateStats(allDevices);
-    };
+    function getPasswords() {
+      const stored = localStorage.getItem('dakahlia_blood_banks_passwords');
+      if (stored) return JSON.parse(stored);
+      // Default passwords: each bank code = its password, admin = admin
+      const defaults = { admin: "admin" };
+      BANKS.forEach(b => { defaults[b.code] = b.code; });
+      localStorage.setItem('dakahlia_blood_banks_passwords', JSON.stringify(defaults));
+      return defaults;
+    }
 
-    function saveToStorage() {
-      localStorage.setItem('dekernes177_devices', JSON.stringify(allDevices));
+    function savePasswords(pwds) {
+      localStorage.setItem('dakahlia_blood_banks_passwords', JSON.stringify(pwds));
+    }
+
+    function verifyPassword(key, password) {
+      const pwds = getPasswords();
+      return pwds[key] === password;
+    }
+
+    function updatePassword(key, newPassword) {
+      const pwds = getPasswords();
+      pwds[key] = newPassword;
+      savePasswords(pwds);
     }
 
     // ============================================
-    // RENDER
+    // SESSION / AUTH
     // ============================================
-    function renderDevices(devices) {
+    function saveSession(user) {
+      localStorage.setItem('dakahlia_blood_banks_session', JSON.stringify(user));
+      currentUser = user;
+    }
+
+    function getSession() {
+      const stored = localStorage.getItem('dakahlia_blood_banks_session');
+      return stored ? JSON.parse(stored) : null;
+    }
+
+    function clearSession() {
+      localStorage.removeItem('dakahlia_blood_banks_session');
+      currentUser = null;
+    }
+
+    // ============================================
+    // INIT
+    // ============================================
+    window.onload = function() {
+      // Init devices
+      const storedDevices = localStorage.getItem('dakahlia_blood_banks_devices');
+      if (storedDevices) {
+        allDevices = JSON.parse(storedDevices);
+      } else {
+        allDevices = JSON.parse(JSON.stringify(DEFAULT_DEVICES));
+        localStorage.setItem('dakahlia_blood_banks_devices', JSON.stringify(allDevices));
+      }
+
+      // Init passwords
+      getPasswords();
+
+      // Populate bank select
+      const select = document.getElementById('login-bank-code');
+      BANKS.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b.code;
+        opt.textContent = b.name + ' (' + b.code + ')';
+        select.appendChild(opt);
+      });
+
+      // Check existing session
+      const session = getSession();
+      if (session) {
+        currentUser = session;
+        if (session.type === 'admin') {
+          renderAdminDashboard();
+          showPage('admin');
+        } else {
+          currentBankId = session.bankId;
+          const bank = BANKS.find(b => b.id === currentBankId);
+          document.getElementById('bank-title').textContent = bank.name;
+          document.getElementById('bank-subtitle').textContent = 'كود ' + bank.code;
+          renderBankDevices();
+          showPage('bank');
+        }
+      }
+    };
+
+    function saveToStorage() {
+      localStorage.setItem('dakahlia_blood_banks_devices', JSON.stringify(allDevices));
+    }
+
+    // ============================================
+    // LOGIN SYSTEM
+    // ============================================
+    function switchLoginTab(tab) {
+      const bankTab = document.getElementById('tab-bank');
+      const adminTab = document.getElementById('tab-admin');
+      const bankPanel = document.getElementById('login-bank-panel');
+      const adminPanel = document.getElementById('login-admin-panel');
+
+      if (tab === 'bank') {
+        bankTab.className = 'flex-1 py-4 text-center font-bold text-red-700 bg-red-50 border-b-2 border-red-600 transition-all';
+        adminTab.className = 'flex-1 py-4 text-center font-medium text-slate-500 hover:text-slate-700 transition-all';
+        bankPanel.classList.remove('hidden');
+        adminPanel.classList.add('hidden');
+      } else {
+        adminTab.className = 'flex-1 py-4 text-center font-bold text-slate-800 bg-slate-100 border-b-2 border-slate-700 transition-all';
+        bankTab.className = 'flex-1 py-4 text-center font-medium text-slate-500 hover:text-slate-700 transition-all';
+        adminPanel.classList.remove('hidden');
+        bankPanel.classList.add('hidden');
+      }
+    }
+
+    function handleBankLogin(e) {
+      e.preventDefault();
+      const code = document.getElementById('login-bank-code').value;
+      const password = document.getElementById('login-bank-password').value;
+
+      if (!code) {
+        showToast('اختر البنك أولاً', 'error');
+        shakeElement('login-bank-code');
+        return;
+      }
+
+      if (!verifyPassword(code, password)) {
+        showToast('كلمة المرور غير صحيحة', 'error');
+        shakeElement('login-bank-password');
+        return;
+      }
+
+      const bank = BANKS.find(b => b.code === code);
+      currentBankId = bank.id;
+      saveSession({ type: 'bank', bankId: bank.id, bankCode: code });
+
+      document.getElementById('bank-title').textContent = bank.name;
+      document.getElementById('bank-subtitle').textContent = 'كود ' + bank.code;
+      renderBankDevices();
+      showPage('bank');
+      showToast('تم تسجيل الدخول بنجاح - ' + bank.name, 'success');
+    }
+
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      const password = document.getElementById('login-admin-password').value;
+
+      if (!verifyPassword('admin', password)) {
+        showToast('كلمة المرور غير صحيحة', 'error');
+        shakeElement('login-admin-password');
+        return;
+      }
+
+      saveSession({ type: 'admin' });
+      renderAdminDashboard();
+      showPage('admin');
+      showToast('تم تسجيل الدخول كإدارة عليا', 'success');
+    }
+
+    function logout() {
+      clearSession();
+      document.getElementById('login-bank-code').value = '';
+      document.getElementById('login-bank-password').value = '';
+      document.getElementById('login-admin-password').value = '';
+      showPage('login');
+      showToast('تم تسجيل الخروج', 'success');
+    }
+
+    function shakeElement(id) {
+      const el = document.getElementById(id);
+      el.classList.remove('shake');
+      void el.offsetWidth;
+      el.classList.add('shake');
+      setTimeout(() => el.classList.remove('shake'), 500);
+    }
+
+    // ============================================
+    // CHANGE PASSWORD
+    // ============================================
+    function openChangePasswordModal() {
+      document.getElementById('current-password').value = '';
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-password').value = '';
+      document.getElementById('password-modal').classList.remove('hidden');
+    }
+
+    function closePasswordModal() {
+      document.getElementById('password-modal').classList.add('hidden');
+    }
+
+    function changePassword(e) {
+      e.preventDefault();
+      const current = document.getElementById('current-password').value;
+      const newPass = document.getElementById('new-password').value;
+      const confirm = document.getElementById('confirm-password').value;
+
+      const key = currentUser.type === 'admin' ? 'admin' : currentUser.bankCode;
+
+      if (!verifyPassword(key, current)) {
+        showToast('كلمة المرور الحالية غير صحيحة', 'error');
+        shakeElement('current-password');
+        return;
+      }
+
+      if (newPass !== confirm) {
+        showToast('كلمة المرور الجديدة غير متطابقة', 'error');
+        shakeElement('confirm-password');
+        return;
+      }
+
+      if (newPass.length < 3) {
+        showToast('كلمة المرور يجب أن تكون 3 أحرف على الأقل', 'error');
+        return;
+      }
+
+      updatePassword(key, newPass);
+      closePasswordModal();
+      showToast('تم تغيير كلمة المرور بنجاح', 'success');
+    }
+
+    // ============================================
+    // NAVIGATION
+    // ============================================
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + pageId).classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    // ============================================
+    // ADMIN DASHBOARD
+    // ============================================
+    function renderAdminDashboard() {
+      document.getElementById('admin-total-banks').textContent = BANKS.length;
+      document.getElementById('admin-total-devices').textContent = allDevices.length;
+      document.getElementById('admin-total-issues').textContent = allDevices.filter(d => d.issues === 'يوجد').length;
+      document.getElementById('admin-total-contracts').textContent = allDevices.filter(d => d.contract === 'يوجد').length;
+
+      const tbody = document.getElementById('admin-banks-table');
+      tbody.innerHTML = BANKS.map((bank, i) => {
+        const bankDevs = allDevices.filter(d => d.bankId === bank.id);
+        const devCount = bankDevs.length;
+        const issues = bankDevs.filter(d => d.issues === 'يوجد').length;
+        const contracts = bankDevs.filter(d => d.contract === 'يوجد').length;
+        const spares = bankDevs.filter(d => d.spare === 'يوجد').length;
+        const cards = bankDevs.filter(d => d.idCard === 'يوجد').length;
+        return `<tr class="hover:bg-slate-50 transition-colors">
+          <td class="px-4 py-3 text-sm text-slate-500">${i + 1}</td>
+          <td class="px-4 py-3 text-sm font-semibold text-slate-800">${bank.name}</td>
+          <td class="px-4 py-3 text-sm font-mono text-slate-600">${bank.code}</td>
+          <td class="px-4 py-3 text-sm font-bold ${devCount > 0 ? 'text-red-600' : 'text-slate-400'}">${devCount}</td>
+          <td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${issues > 0 ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-500'}">${issues}</span></td>
+          <td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${contracts > 0 ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-500'}">${contracts}</span></td>
+          <td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${spares > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}">${spares}</span></td>
+          <td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${cards > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}">${cards}</span></td>
+          <td class="px-4 py-3"><button onclick="adminOpenBank('${bank.id}')" class="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors">فتح السجل</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function adminOpenBank(bankId) {
+      currentBankId = bankId;
+      const bank = BANKS.find(b => b.id === bankId);
+      document.getElementById('bank-title').textContent = bank.name;
+      document.getElementById('bank-subtitle').textContent = 'كود ' + bank.code;
+      renderBankDevices();
+      showPage('bank');
+    }
+
+    function exportAdminToExcel() {
+      showLoading(true);
+      setTimeout(() => {
+        const data = BANKS.map((bank, i) => {
+          const bankDevs = allDevices.filter(d => d.bankId === bank.id);
+          return { '#': i + 1, 'اسم البنك': bank.name, 'الكود': bank.code, 'الموقع': bank.location, 'عدد الأجهزة': bankDevs.length, 'الأعطال': bankDevs.filter(d => d.issues === 'يوجد').length, 'عقود الصيانة': bankDevs.filter(d => d.contract === 'يوجد').length, 'البدائل': bankDevs.filter(d => d.spare === 'يوجد').length, 'كروت التعريف': bankDevs.filter(d => d.idCard === 'يوجد').length };
+        });
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'ملخص البنوك');
+        XLSX.writeFile(wb, 'بنوك_الدم_الدقهلية_ملخص.xlsx');
+        showLoading(false);
+        showToast('تم تصدير Excel بنجاح', 'success');
+      }, 500);
+    }
+
+    async function exportAdminToPDF() {
+      showLoading(true);
+      try {
+        const cap = document.getElementById('pdf-capture-area');
+        let html = '<div style="text-align:center;margin-bottom:20px;">';
+        html += '<h1 style="color:#b91c1c;font-size:22px;margin:0;">Dashboard بنوك الدم - محافظة الدقهلية</h1>';
+        html += '<p style="color:#64748b;font-size:14px;margin:5px 0 0;">إجمالي البنوك: ' + BANKS.length + ' | إجمالي الأجهزة: ' + allDevices.length + '</p>';
+        html += '</div>';
+        html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+        html += '<thead><tr style="background:#1e293b;color:#fff;">';
+        html += '<th style="padding:8px;border:1px solid #ccc;">#</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">اسم البنك</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">الكود</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">الأجهزة</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">الأعطال</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">عقود</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">بدائل</th>';
+        html += '<th style="padding:8px;border:1px solid #ccc;">كروت</th>';
+        html += '</tr></thead><tbody>';
+        BANKS.forEach((bank, i) => {
+          const bankDevs = allDevices.filter(d => d.bankId === bank.id);
+          const bg = i % 2 === 0 ? '#f8fafc' : '#fff';
+          html += '<tr style="background:' + bg + ';">';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;">' + (i+1) + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;">' + escapeHtml(bank.name) + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;font-family:monospace;">' + bank.code + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;font-weight:bold;">' + bankDevs.length + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;">' + bankDevs.filter(d => d.issues === 'يوجد').length + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;">' + bankDevs.filter(d => d.contract === 'يوجد').length + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;">' + bankDevs.filter(d => d.spare === 'يوجد').length + '</td>';
+          html += '<td style="padding:6px;border:1px solid #ddd;text-align:center;">' + bankDevs.filter(d => d.idCard === 'يوجد').length + '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+        cap.innerHTML = html;
+
+        const canvas = await html2canvas(cap, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 800 });
+        const { jsPDF } = window.jspdf;
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+        const imgX = (pdfWidth - imgWidth * ratio) / 2;
+        let imgY = 10;
+        let heightLeft = imgHeight * ratio;
+        let position = imgY;
+        pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, imgHeight * ratio);
+        heightLeft -= pdfHeight - 20;
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight * ratio + imgY;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, imgHeight * ratio);
+          heightLeft -= pdfHeight - 20;
+        }
+        pdf.save('بنوك_الدم_الدقهلية_Dashboard.pdf');
+        cap.innerHTML = '';
+        showToast('تم تصدير PDF بنجاح', 'success');
+      } catch (err) {
+        showToast('حدث خطأ أثناء التصدير', 'error');
+        console.error(err);
+      }
+      showLoading(false);
+    }
+
+    // ============================================
+    // BANK PAGE - DEVICES
+    // ============================================
+    function getBankDevices() {
+      return allDevices.filter(d => d.bankId === currentBankId);
+    }
+
+    function renderBankDevices() {
+      const devices = getBankDevices();
       const tbody = document.getElementById('devices-table-body');
       const empty = document.getElementById('empty-state');
 
       if (devices.length === 0) {
         tbody.innerHTML = '';
         empty.classList.remove('hidden');
-        return;
+      } else {
+        empty.classList.add('hidden');
+        tbody.innerHTML = devices.map((dev, i) => `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="px-4 py-3.5 text-sm text-slate-500">${i + 1}</td>
+            <td class="px-4 py-3.5 text-sm font-semibold text-slate-800">${escapeHtml(dev.name || '')}</td>
+            <td class="px-4 py-3.5 text-sm text-slate-600 font-mono">${escapeHtml(dev.code || '')}</td>
+            <td class="px-4 py-3.5 text-sm text-slate-600 font-mono">${escapeHtml(dev.serial || '')}</td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">${escapeHtml(dev.brand || '')}</td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">${escapeHtml(dev.model || '')}</td>
+            <td class="px-4 py-3.5"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.spare === 'يوجد' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${dev.spare || 'لا يوجد'}</span></td>
+            <td class="px-4 py-3.5"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.idCard === 'يوجد' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}">${dev.idCard || 'لا يوجد'}</span></td>
+            <td class="px-4 py-3.5"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.log === 'يوجد' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}">${dev.log || 'لا يوجد'}</span></td>
+            <td class="px-4 py-3.5"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.contract === 'يوجد' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600'}">${dev.contract || 'لا يوجد'}</span></td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">${formatDate(dev.maintDate)}</td>
+            <td class="px-4 py-3.5"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.issues === 'يوجد' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}">${dev.issues || 'لا يوجد'}</span></td>
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-1">
+                <button onclick="editDevice('${dev.id}')" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="تعديل"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+                <button onclick="deleteDevice('${dev.id}')" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="حذف"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
       }
-      empty.classList.add('hidden');
-
-      tbody.innerHTML = devices.map((dev, i) => `
-        <tr class="hover:bg-slate-50 transition-colors">
-          <td class="px-4 py-3.5 text-sm text-slate-500">${i + 1}</td>
-          <td class="px-4 py-3.5 text-sm font-semibold text-slate-800">${escapeHtml(dev.name || '')}</td>
-          <td class="px-4 py-3.5 text-sm text-slate-600 font-mono">${escapeHtml(dev.code || '')}</td>
-          <td class="px-4 py-3.5 text-sm text-slate-600 font-mono">${escapeHtml(dev.serial || '')}</td>
-          <td class="px-4 py-3.5 text-sm text-slate-600">${escapeHtml(dev.brand || '')}</td>
-          <td class="px-4 py-3.5 text-sm text-slate-600">${escapeHtml(dev.model || '')}</td>
-          <td class="px-4 py-3.5">
-            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.spare === 'يوجد' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${dev.spare || 'لا يوجد'}</span>
-          </td>
-          <td class="px-4 py-3.5">
-            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.idCard === 'يوجد' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}">${dev.idCard || 'لا يوجد'}</span>
-          </td>
-          <td class="px-4 py-3.5">
-            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.log === 'يوجد' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}">${dev.log || 'لا يوجد'}</span>
-          </td>
-          <td class="px-4 py-3.5">
-            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.contract === 'يوجد' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600'}">${dev.contract || 'لا يوجد'}</span>
-          </td>
-          <td class="px-4 py-3.5 text-sm text-slate-600">${formatDate(dev.maintDate)}</td>
-          <td class="px-4 py-3.5">
-            <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.issues === 'يوجد' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}">${dev.issues || 'لا يوجد'}</span>
-          </td>
-          <td class="px-4 py-3.5">
-            <div class="flex items-center gap-1">
-              <button onclick="editDevice('${dev.id}')" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="تعديل">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-              </button>
-              <button onclick="deleteDevice('${dev.id}')" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="حذف">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `).join('');
-    }
-
-    function updateStats(devices) {
       document.getElementById('stat-total').textContent = devices.length;
       document.getElementById('stat-spare').textContent = devices.filter(d => d.spare === 'يوجد').length;
       document.getElementById('stat-card').textContent = devices.filter(d => d.idCard === 'يوجد').length;
@@ -415,14 +802,37 @@
 
     function searchDevices() {
       const q = document.getElementById('search-input').value.toLowerCase().trim();
-      if (!q) { renderDevices(allDevices); return; }
-      const filtered = allDevices.filter(d =>
+      const devices = getBankDevices();
+      if (!q) { renderBankDevices(); return; }
+      const filtered = devices.filter(d =>
         (d.name && d.name.toLowerCase().includes(q)) ||
         (d.code && d.code.toLowerCase().includes(q)) ||
         (d.serial && d.serial.toLowerCase().includes(q)) ||
         (d.brand && d.brand.toLowerCase().includes(q))
       );
-      renderDevices(filtered);
+      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('devices-table-body').innerHTML = filtered.map((dev, i) => `
+        <tr class="hover:bg-slate-50 transition-colors">
+          <td class="px-4 py-3.5 text-sm text-slate-500">${i + 1}</td>
+          <td class="px-4 py-3.5 text-sm font-semibold text-slate-800">${escapeHtml(dev.name || '')}</td>
+          <td class="px-4 py-3.5 text-sm text-slate-600 font-mono">${escapeHtml(dev.code || '')}</td>
+          <td class="px-4 py-3.5 text-sm text-slate-600 font-mono">${escapeHtml(dev.serial || '')}</td>
+          <td class="px-4 py-3.5 text-sm text-slate-600">${escapeHtml(dev.brand || '')}</td>
+          <td class="px-4 py-3.5 text-sm text-slate-600">${escapeHtml(dev.model || '')}</td>
+          <td class="px-4 py-3.5"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.spare === 'يوجد' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}">${dev.spare || 'لا يوجد'}</span></td>
+          <td class="px-4 py-3.5"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.idCard === 'يوجد' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}">${dev.idCard || 'لا يوجد'}</span></td>
+          <td class="px-4 py-3.5"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.log === 'يوجد' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}">${dev.log || 'لا يوجد'}</span></td>
+          <td class="px-4 py-3.5"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.contract === 'يوجد' ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-600'}">${dev.contract || 'لا يوجد'}</span></td>
+          <td class="px-4 py-3.5 text-sm text-slate-600">${formatDate(dev.maintDate)}</td>
+          <td class="px-4 py-3.5"><span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${dev.issues === 'يوجد' ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'}">${dev.issues || 'لا يوجد'}</span></td>
+          <td class="px-4 py-3.5">
+            <div class="flex items-center gap-1">
+              <button onclick="editDevice('${dev.id}')" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="تعديل"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
+              <button onclick="deleteDevice('${dev.id}')" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="حذف"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
     }
 
     // ============================================
@@ -480,21 +890,18 @@
         issues: document.getElementById('dev-issues').value,
         notes: document.getElementById('dev-notes').value.trim()
       };
-
       showLoading(true);
       setTimeout(() => {
         if (id) {
           const idx = allDevices.findIndex(d => d.id === id);
-          if (idx !== -1) {
-            allDevices[idx] = { ...allDevices[idx], ...data };
-          }
+          if (idx !== -1) allDevices[idx] = { ...allDevices[idx], ...data };
         } else {
           data.id = 'dev-' + Date.now();
+          data.bankId = currentBankId;
           allDevices.unshift(data);
         }
         saveToStorage();
-        renderDevices(allDevices);
-        updateStats(allDevices);
+        renderBankDevices();
         showLoading(false);
         closeModal();
         showToast(id ? 'تم تحديث الجهاز بنجاح' : 'تم إضافة الجهاز بنجاح', 'success');
@@ -507,94 +914,110 @@
       setTimeout(() => {
         allDevices = allDevices.filter(d => d.id !== id);
         saveToStorage();
-        renderDevices(allDevices);
-        updateStats(allDevices);
+        renderBankDevices();
         showLoading(false);
         showToast('تم حذف الجهاز بنجاح', 'success');
       }, 300);
     }
 
-
     // ============================================
-    // EXPORT FUNCTIONS
+    // EXPORT BANK
     // ============================================
-    function exportToExcel() {
+    function exportBankToExcel() {
       showLoading(true);
       setTimeout(() => {
-        const data = allDevices.map((d, i) => ({
-          '#': i + 1,
-          'اسم الجهاز': d.name,
-          'الكود': d.code,
-          'الرقم التسلسلي': d.serial,
-          'الماركة': d.brand,
-          'الموديل': d.model,
-          'البديل': d.spare,
-          'كارت التعريف': d.idCard,
-          'سجل الجهاز': d.log,
-          'عقد الصيانة': d.contract,
-          'تاريخ الصيانة': d.maintDate || '-',
-          'تاريخ التشغيل': d.operDate || '-',
-          'تاريخ التركيب': d.installDate || '-',
-          'الأعطال': d.issues,
-          'ملاحظات': d.notes || ''
+        const devices = getBankDevices();
+        const bank = BANKS.find(b => b.id === currentBankId);
+        const data = devices.map((d, i) => ({
+          '#': i + 1, 'اسم الجهاز': d.name, 'الكود': d.code, 'الرقم التسلسلي': d.serial, 'الماركة': d.brand, 'الموديل': d.model,
+          'البديل': d.spare, 'كارت التعريف': d.idCard, 'سجل الجهاز': d.log, 'عقد الصيانة': d.contract,
+          'تاريخ الصيانة': d.maintDate || '-', 'تاريخ التشغيل': d.operDate || '-', 'تاريخ التركيب': d.installDate || '-', 'الأعطال': d.issues, 'ملاحظات': d.notes || ''
         }));
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'الأجهزة');
-        XLSX.writeFile(wb, 'بنك_دم_دكرنس_الأجهزة.xlsx');
+        XLSX.writeFile(wb, bank.code + '_الأجهزة.xlsx');
         showLoading(false);
         showToast('تم تصدير Excel بنجاح', 'success');
       }, 500);
     }
 
-    function exportToPDF() {
+    async function exportBankToPDF() {
       showLoading(true);
-      setTimeout(() => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-        // Header
-        doc.setFillColor(185, 28, 28);
-        doc.rect(0, 0, 297, 22, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFontSize(16);
-        doc.text('بنك دم دكرنس - كود 177', 148.5, 14, { align: 'center' });
-        doc.setFontSize(11);
-        doc.text('سجل الأجهزة الطبية', 148.5, 20, { align: 'center' });
-        // Table
-        const body = allDevices.map((d, i) => [
-          i + 1, d.name, d.code, d.serial, d.brand, d.model,
-          d.spare, d.idCard, d.log, d.contract,
-          d.maintDate || '-', d.issues
-        ]);
-        doc.autoTable({
-          head: [['#', 'اسم الجهاز', 'الكود', 'الرقم التسلسلي', 'الماركة', 'الموديل', 'البديل', 'كارت التعريف', 'سجل', 'عقد', 'صيانة', 'أعطال']],
-          body: body,
-          startY: 28,
-          theme: 'grid',
-          headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' },
-          bodyStyles: { halign: 'center', fontSize: 8 },
-          alternateRowStyles: { fillColor: [254, 242, 242] },
-          styles: { font: 'helvetica', cellPadding: 2 },
-          columnStyles: {
-            0: { cellWidth: 8 }, 1: { cellWidth: 35 }, 2: { cellWidth: 22 },
-            3: { cellWidth: 22 }, 4: { cellWidth: 20 }, 5: { cellWidth: 20 },
-            6: { cellWidth: 14 }, 7: { cellWidth: 16 }, 8: { cellWidth: 12 },
-            9: { cellWidth: 12 }, 10: { cellWidth: 18 }, 11: { cellWidth: 14 }
-          }
+      try {
+        const bank = BANKS.find(b => b.id === currentBankId);
+        const devices = getBankDevices();
+        const cap = document.getElementById('pdf-capture-area');
+        let html = '<div style="text-align:center;margin-bottom:20px;">';
+        html += '<h1 style="color:#b91c1c;font-size:22px;margin:0;">' + escapeHtml(bank.name) + '</h1>';
+        html += '<p style="color:#64748b;font-size:14px;margin:5px 0 0;">كود ' + bank.code + ' | إجمالي الأجهزة: ' + devices.length + '</p>';
+        html += '</div>';
+        html += '<table style="width:100%;border-collapse:collapse;font-size:11px;">';
+        html += '<thead><tr style="background:#b91c1c;color:#fff;">';
+        html += '<th style="padding:6px;border:1px solid #ccc;">#</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">اسم الجهاز</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">الكود</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">الرقم التسلسلي</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">الماركة</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">الموديل</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">البديل</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">كارت</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">سجل</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">عقد</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">صيانة</th>';
+        html += '<th style="padding:6px;border:1px solid #ccc;">أعطال</th>';
+        html += '</tr></thead><tbody>';
+        devices.forEach((dev, i) => {
+          const bg = i % 2 === 0 ? '#fff' : '#fef2f2';
+          html += '<tr style="background:' + bg + ';">';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + (i+1) + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;">' + escapeHtml(dev.name) + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;font-family:monospace;">' + escapeHtml(dev.code) + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;font-family:monospace;">' + escapeHtml(dev.serial) + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + escapeHtml(dev.brand) + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + escapeHtml(dev.model) + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + dev.spare + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + dev.idCard + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + dev.log + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + dev.contract + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + (dev.maintDate || '-') + '</td>';
+          html += '<td style="padding:5px;border:1px solid #ddd;text-align:center;">' + dev.issues + '</td>';
+          html += '</tr>';
         });
-        // Footer
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-          doc.setPage(i);
-          doc.setFontSize(8);
-          doc.setTextColor(100, 100, 100);
-          doc.text('صفحة ' + i + ' من ' + pageCount, 148.5, 210 - 5, { align: 'center' });
+        html += '</tbody></table>';
+        cap.innerHTML = html;
+
+        const canvas = await html2canvas(cap, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 800 });
+        const { jsPDF } = window.jspdf;
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+        const imgX = (pdfWidth - imgWidth * ratio) / 2;
+        let imgY = 10;
+        let heightLeft = imgHeight * ratio;
+        let position = imgY;
+        pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, imgHeight * ratio);
+        heightLeft -= pdfHeight - 20;
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight * ratio + imgY;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, imgHeight * ratio);
+          heightLeft -= pdfHeight - 20;
         }
-        doc.save('بنك_دم_دكرنس_الأجهزة.pdf');
-        showLoading(false);
+        pdf.save(bank.code + '_الأجهزة.pdf');
+        cap.innerHTML = '';
         showToast('تم تصدير PDF بنجاح', 'success');
-      }, 500);
+      } catch (err) {
+        showToast('حدث خطأ أثناء التصدير', 'error');
+        console.error(err);
+      }
+      showLoading(false);
     }
+
     // ============================================
     // UTILS
     // ============================================
@@ -606,10 +1029,7 @@
 
     function formatDate(dateStr) {
       if (!dateStr) return '-';
-      try {
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('ar-EG');
-      } catch { return dateStr; }
+      try { return new Date(dateStr).toLocaleDateString('ar-EG'); } catch { return dateStr; }
     }
 
     function showToast(msg, type) {
@@ -617,9 +1037,7 @@
       toast.className = `fixed bottom-6 left-1/2 -translate-x-1/2 z-[110] px-6 py-3 rounded-xl shadow-xl text-white font-medium transition-all transform ${type === 'error' ? 'bg-red-600' : 'bg-emerald-600'}`;
       toast.textContent = msg;
       toast.classList.remove('hidden');
-      requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-10', 'opacity-0');
-      });
+      requestAnimationFrame(() => { toast.classList.remove('translate-y-10', 'opacity-0'); });
       setTimeout(() => {
         toast.classList.add('translate-y-10', 'opacity-0');
         setTimeout(() => toast.classList.add('hidden'), 300);
@@ -630,5 +1048,9 @@
       document.getElementById('loading-overlay').classList.toggle('hidden', !show);
     }
   </script>
+
+  <!-- Hidden PDF capture area -->
+  <div id="pdf-capture-area" style="position:absolute;left:-9999px;top:0;width:800px;background:#fff;padding:20px;direction:rtl;font-family:'Cairo',sans-serif;"></div>
+
 </body>
 </html>
