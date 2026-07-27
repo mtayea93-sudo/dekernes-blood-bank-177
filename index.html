@@ -155,11 +155,13 @@
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6">
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <h2 class="text-lg font-bold text-slate-800">ملخص البنوك</h2>
-          <div class="flex gap-2">
+          <div class="flex gap-2 flex-wrap">
             <button onclick="exportAdminToExcel()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Excel ملخص</button>
             <button onclick="exportAdminToPDF()" class="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-semibold hover:bg-rose-700 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>PDF ملخص</button>
             <button onclick="exportAllDevicesToExcel()" class="px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm font-semibold hover:bg-emerald-800 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Excel كل الأجهزة</button>
             <button onclick="exportAllDevicesToPDF()" class="px-4 py-2 bg-rose-700 text-white rounded-lg text-sm font-semibold hover:bg-rose-800 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>PDF كل الأجهزة</button>
+            <button onclick="openAddBankModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>إضافة بنك</button>
+            <button onclick="openDeleteBankModal()" class="px-4 py-2 bg-red-700 text-white rounded-lg text-sm font-semibold hover:bg-red-800 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>حذف بنك</button>
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -358,7 +360,7 @@
     // ============================================
     // BANKS DATA
     // ============================================
-    const BANKS = [
+    const DEFAULT_BANKS = [
       { id: "H169", name: "بنك دم المنصورة العام القديم", code: "H169", location: "المنصورة" },
       { id: "H170", name: "بنك دم بلقاس المركزي", code: "H170", location: "بلقاس" },
       { id: "H171", name: "بنك دم المطرية المركزي", code: "H171", location: "المطرية" },
@@ -379,6 +381,20 @@
       { id: "H187", name: "بنك دم أتميدة المركزي", code: "H187", location: "أتميدة" },
       { id: "H188", name: "بنك دم جمهضة المركزي", code: "H188", location: "جمهضة" }
     ];
+
+    function getBanks() {
+      const stored = localStorage.getItem('dakahlia_blood_banks_list');
+      if (stored) return JSON.parse(stored);
+      localStorage.setItem('dakahlia_blood_banks_list', JSON.stringify(DEFAULT_BANKS));
+      return JSON.parse(JSON.stringify(DEFAULT_BANKS));
+    }
+
+    function saveBanks(banks) {
+      localStorage.setItem('dakahlia_blood_banks_list', JSON.stringify(banks));
+    }
+
+    // Alias for backward compatibility
+    const BANKS = getBanks();
 
     const DEFAULT_DEVICES = [
       { id: "dev-001", bankId: "H177", name: "ثلاجه دم تحت الفحص (الكترولوكس)", code: "F 01H177", serial: "9195016", brand: "الكترولوكس", model: "MRB 1200", spare: "لا يوجد", idCard: "يوجد", log: "يوجد", contract: "لا يوجد", maintDate: "", operDate: "2001-03-25", installDate: "", issues: "لا يوجد", notes: "" },
@@ -430,7 +446,8 @@
       if (stored) return JSON.parse(stored);
       // Default passwords: each bank code = its password, admin = admin
       const defaults = { admin: "admin" };
-      BANKS.forEach(b => { defaults[b.code] = b.code; });
+      const banks = getBanks();
+      banks.forEach(b => { defaults[b.code] = b.code; });
       localStorage.setItem('dakahlia_blood_banks_passwords', JSON.stringify(defaults));
       return defaults;
     }
@@ -481,17 +498,14 @@
         localStorage.setItem('dakahlia_blood_banks_devices', JSON.stringify(allDevices));
       }
 
+      // Init banks list (save defaults if none stored)
+      getBanks();
+
       // Init passwords
       getPasswords();
 
       // Populate bank select
-      const select = document.getElementById('login-bank-code');
-      BANKS.forEach(b => {
-        const opt = document.createElement('option');
-        opt.value = b.code;
-        opt.textContent = b.name + ' (' + b.code + ')';
-        select.appendChild(opt);
-      });
+      refreshBankSelect();
 
       // Check existing session
       const session = getSession();
@@ -502,9 +516,12 @@
           showPage('admin');
         } else {
           currentBankId = session.bankId;
-          const bank = BANKS.find(b => b.id === currentBankId);
-          document.getElementById('bank-title').textContent = bank.name;
-          document.getElementById('bank-subtitle').textContent = 'كود ' + bank.code;
+          const banks = getBanks();
+          const bank = banks.find(b => b.id === currentBankId);
+          if (bank) {
+            document.getElementById('bank-title').textContent = bank.name;
+            document.getElementById('bank-subtitle').textContent = 'كود ' + bank.code;
+          }
           renderBankDevices();
           showPage('bank');
         }
@@ -554,7 +571,8 @@
         return;
       }
 
-      const bank = BANKS.find(b => b.code === code);
+      const banks = getBanks();
+      const bank = banks.find(b => b.code === code);
       currentBankId = bank.id;
       saveSession({ type: 'bank', bankId: bank.id, bankCode: code });
 
@@ -643,6 +661,132 @@
     }
 
     // ============================================
+    // BANK MANAGEMENT (Admin)
+    // ============================================
+    function openAddBankModal() {
+      document.getElementById('new-bank-name').value = '';
+      document.getElementById('new-bank-code').value = '';
+      document.getElementById('new-bank-location').value = '';
+      document.getElementById('add-bank-modal').classList.remove('hidden');
+    }
+
+    function closeAddBankModal() {
+      document.getElementById('add-bank-modal').classList.add('hidden');
+    }
+
+    function openDeleteBankModal() {
+      const select = document.getElementById('delete-bank-select');
+      select.innerHTML = '<option value="">اختر البنك...</option>';
+      const banks = getBanks();
+      banks.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b.id;
+        opt.textContent = b.name + ' (' + b.code + ')';
+        select.appendChild(opt);
+      });
+      document.getElementById('delete-bank-modal').classList.remove('hidden');
+    }
+
+    function closeDeleteBankModal() {
+      document.getElementById('delete-bank-modal').classList.add('hidden');
+    }
+
+    function addBank(e) {
+      e.preventDefault();
+      const name = document.getElementById('new-bank-name').value.trim();
+      const code = document.getElementById('new-bank-code').value.trim();
+      const location = document.getElementById('new-bank-location').value.trim();
+
+      if (!name || !code || !location) {
+        showToast('يرجى ملء جميع الحقول', 'error');
+        return;
+      }
+
+      const banks = getBanks();
+      if (banks.find(b => b.code === code)) {
+        showToast('كود البنك مستخدم بالفعل', 'error');
+        shakeElement('new-bank-code');
+        return;
+      }
+      if (banks.find(b => b.id === code)) {
+        showToast('كود البنك مستخدم بالفعل', 'error');
+        shakeElement('new-bank-code');
+        return;
+      }
+
+      const newBank = { id: code, name: name, code: code, location: location };
+      banks.push(newBank);
+      saveBanks(banks);
+
+      // Add default password for new bank
+      const pwds = getPasswords();
+      pwds[code] = code;
+      savePasswords(pwds);
+
+      // Update login select
+      refreshBankSelect();
+
+      // Refresh admin dashboard
+      renderAdminDashboard();
+
+      closeAddBankModal();
+      showToast('تم إضافة البنك بنجاح - ' + name, 'success');
+    }
+
+    function deleteBank(e) {
+      e.preventDefault();
+      const bankId = document.getElementById('delete-bank-select').value;
+      if (!bankId) {
+        showToast('اختر البنك أولاً', 'error');
+        return;
+      }
+
+      const banks = getBanks();
+      const bank = banks.find(b => b.id === bankId);
+      if (!bank) {
+        showToast('البنك غير موجود', 'error');
+        return;
+      }
+
+      if (!confirm(`هل أنت متأكد من حذف "${bank.name}" نهائياً؟
+سيتم حذف جميع أجهزته وبياناته.`)) return;
+
+      // Remove bank
+      const newBanks = banks.filter(b => b.id !== bankId);
+      saveBanks(newBanks);
+
+      // Remove all devices for this bank
+      allDevices = allDevices.filter(d => d.bankId !== bankId);
+      saveToStorage();
+
+      // Remove bank password
+      const pwds = getPasswords();
+      delete pwds[bank.code];
+      savePasswords(pwds);
+
+      // Update login select
+      refreshBankSelect();
+
+      // Refresh admin dashboard
+      renderAdminDashboard();
+
+      closeDeleteBankModal();
+      showToast('تم حذف البنك وجميع أجهزته بنجاح', 'success');
+    }
+
+    function refreshBankSelect() {
+      const select = document.getElementById('login-bank-code');
+      select.innerHTML = '<option value="">اختر البنك...</option>';
+      const banks = getBanks();
+      banks.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b.code;
+        opt.textContent = b.name + ' (' + b.code + ')';
+        select.appendChild(opt);
+      });
+    }
+
+    // ============================================
     // NAVIGATION
     // ============================================
     function showPage(pageId) {
@@ -655,13 +799,14 @@
     // ADMIN DASHBOARD
     // ============================================
     function renderAdminDashboard() {
-      document.getElementById('admin-total-banks').textContent = BANKS.length;
+      const banks = getBanks();
+      document.getElementById('admin-total-banks').textContent = banks.length;
       document.getElementById('admin-total-devices').textContent = allDevices.length;
       document.getElementById('admin-total-issues').textContent = allDevices.filter(d => d.issues === 'يوجد').length;
       document.getElementById('admin-total-contracts').textContent = allDevices.filter(d => d.contract === 'يوجد').length;
 
       const tbody = document.getElementById('admin-banks-table');
-      tbody.innerHTML = BANKS.map((bank, i) => {
+      tbody.innerHTML = banks.map((bank, i) => {
         const bankDevs = allDevices.filter(d => d.bankId === bank.id);
         const devCount = bankDevs.length;
         const issues = bankDevs.filter(d => d.issues === 'يوجد').length;
@@ -684,7 +829,8 @@
 
     function adminOpenBank(bankId) {
       currentBankId = bankId;
-      const bank = BANKS.find(b => b.id === bankId);
+      const banks = getBanks();
+      const bank = banks.find(b => b.id === bankId);
       document.getElementById('bank-title').textContent = bank.name;
       document.getElementById('bank-subtitle').textContent = 'كود ' + bank.code;
       renderBankDevices();
@@ -694,7 +840,8 @@
     function exportAdminToExcel() {
       showLoading(true);
       setTimeout(() => {
-        const data = BANKS.map((bank, i) => {
+        const banks = getBanks();
+        const data = banks.map((bank, i) => {
           const bankDevs = allDevices.filter(d => d.bankId === bank.id);
           return { '#': i + 1, 'اسم البنك': bank.name, 'الكود': bank.code, 'الموقع': bank.location, 'عدد الأجهزة': bankDevs.length, 'الأعطال': bankDevs.filter(d => d.issues === 'يوجد').length, 'عقود الصيانة': bankDevs.filter(d => d.contract === 'يوجد').length, 'البدائل': bankDevs.filter(d => d.spare === 'يوجد').length, 'كروت التعريف': bankDevs.filter(d => d.idCard === 'يوجد').length };
         });
@@ -710,10 +857,11 @@
     async function exportAdminToPDF() {
       showLoading(true);
       try {
+        const banks = getBanks();
         const cap = document.getElementById('pdf-capture-area');
         let html = '<div style="text-align:center;margin-bottom:20px;">';
         html += '<h1 style="color:#b91c1c;font-size:22px;margin:0;">Dashboard بنوك الدم - محافظة الدقهلية</h1>';
-        html += '<p style="color:#64748b;font-size:14px;margin:5px 0 0;">إجمالي البنوك: ' + BANKS.length + ' | إجمالي الأجهزة: ' + allDevices.length + '</p>';
+        html += '<p style="color:#64748b;font-size:14px;margin:5px 0 0;">إجمالي البنوك: ' + banks.length + ' | إجمالي الأجهزة: ' + allDevices.length + '</p>';
         html += '</div>';
         html += '<table style="width:100%;border-collapse:collapse;font-size:12px;">';
         html += '<thead><tr style="background:#1e293b;color:#fff;">';
@@ -726,7 +874,7 @@
         html += '<th style="padding:8px;border:1px solid #ccc;">بدائل</th>';
         html += '<th style="padding:8px;border:1px solid #ccc;">كروت</th>';
         html += '</tr></thead><tbody>';
-        BANKS.forEach((bank, i) => {
+        banks.forEach((bank, i) => {
           const bankDevs = allDevices.filter(d => d.bankId === bank.id);
           const bg = i % 2 === 0 ? '#f8fafc' : '#fff';
           html += '<tr style="background:' + bg + ';">';
@@ -780,8 +928,9 @@
     function exportAllDevicesToExcel() {
       showLoading(true);
       setTimeout(() => {
+        const banks = getBanks();
         const data = allDevices.map((d, i) => {
-          const bank = BANKS.find(b => b.id === d.bankId);
+          const bank = banks.find(b => b.id === d.bankId);
           return {
             '#': i + 1,
             'اسم البنك': bank ? bank.name : '-',
@@ -836,8 +985,9 @@
         html += '<th style="padding:5px;border:1px solid #ccc;">صيانة</th>';
         html += '<th style="padding:5px;border:1px solid #ccc;">أعطال</th>';
         html += '</tr></thead><tbody>';
+        const banks = getBanks();
         allDevices.forEach((d, i) => {
-          const bank = BANKS.find(b => b.id === d.bankId);
+          const bank = banks.find(b => b.id === d.bankId);
           const bg = i % 2 === 0 ? '#fff' : '#fef2f2';
           html += '<tr style="background:' + bg + ';">';
           html += '<td style="padding:4px;border:1px solid #ddd;text-align:center;">' + (i+1) + '</td>';
@@ -1083,7 +1233,8 @@
       showLoading(true);
       setTimeout(() => {
         const devices = getBankDevices();
-        const bank = BANKS.find(b => b.id === currentBankId);
+        const banks = getBanks();
+        const bank = banks.find(b => b.id === currentBankId);
         const data = devices.map((d, i) => ({
           '#': i + 1, 'اسم الجهاز': d.name, 'الكود': d.code, 'الرقم التسلسلي': d.serial, 'الماركة': d.brand, 'الموديل': d.model,
           'البديل': d.spare, 'كارت التعريف': d.idCard, 'سجل الجهاز': d.log, 'عقد الصيانة': d.contract,
@@ -1101,7 +1252,8 @@
     async function exportBankToPDF() {
       showLoading(true);
       try {
-        const bank = BANKS.find(b => b.id === currentBankId);
+        const banks = getBanks();
+        const bank = banks.find(b => b.id === currentBankId);
         const devices = getBankDevices();
         const cap = document.getElementById('pdf-capture-area');
         let html = '<div style="text-align:center;margin-bottom:20px;">';
@@ -1409,6 +1561,69 @@
     }
 
     </script>
+
+  <!-- ====== ADD BANK MODAL ====== -->
+  <div id="add-bank-modal" class="hidden fixed inset-0 z-[100] overflow-y-auto">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-slate-900/50 transition-opacity backdrop-blur-sm" onclick="closeAddBankModal()"></div>
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+      <div class="inline-block align-bottom bg-white rounded-2xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+        <div class="bg-gradient-to-r from-blue-700 to-blue-900 px-6 py-4 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-white">إضافة بنك دم جديد</h3>
+          <button onclick="closeAddBankModal()" class="text-white/80 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        </div>
+        <form onsubmit="addBank(event)" class="p-6">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">اسم البنك <span class="text-red-500">*</span></label>
+            <input type="text" id="new-bank-name" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-right" placeholder="مثال: بنك دم المنصورة العام" required>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">كود البنك <span class="text-red-500">*</span></label>
+            <input type="text" id="new-bank-code" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-right font-mono" placeholder="مثال: H200" required>
+            <p class="text-xs text-slate-400 mt-1">الباسوورد الافتراضي = كود البنك</p>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">الموقع / المركز <span class="text-red-500">*</span></label>
+            <input type="text" id="new-bank-location" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-right" placeholder="مثال: المنصورة" required>
+          </div>
+          <div class="flex gap-3 justify-end">
+            <button type="button" onclick="closeAddBankModal()" class="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors">إلغاء</button>
+            <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-xl font-medium hover:shadow-lg transition-all">حفظ البنك</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== DELETE BANK MODAL ====== -->
+  <div id="delete-bank-modal" class="hidden fixed inset-0 z-[100] overflow-y-auto">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+      <div class="fixed inset-0 bg-slate-900/50 transition-opacity backdrop-blur-sm" onclick="closeDeleteBankModal()"></div>
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+      <div class="inline-block align-bottom bg-white rounded-2xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
+        <div class="bg-gradient-to-r from-red-700 to-red-900 px-6 py-4 flex items-center justify-between">
+          <h3 class="text-lg font-bold text-white">حذف بنك دم</h3>
+          <button onclick="closeDeleteBankModal()" class="text-white/80 hover:text-white transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        </div>
+        <form onsubmit="deleteBank(event)" class="p-6">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-slate-700 mb-1.5">اختر البنك المراد حذفه <span class="text-red-500">*</span></label>
+            <select id="delete-bank-select" class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right bg-white">
+              <option value="">اختر البنك...</option>
+            </select>
+          </div>
+          <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
+            <p class="text-sm text-red-700 font-medium">⚠️ تحذير:</p>
+            <p class="text-sm text-red-600 mt-1">سيتم حذف البنك وجميع أجهزته وبياناته نهائياً. لا يمكن التراجع عن هذا الإجراء.</p>
+          </div>
+          <div class="flex gap-3 justify-end">
+            <button type="button" onclick="closeDeleteBankModal()" class="px-6 py-2.5 border border-slate-300 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors">إلغاء</button>
+            <button type="submit" class="px-6 py-2.5 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl font-medium hover:shadow-lg transition-all">حذف نهائي</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <!-- Hidden PDF capture area -->
   <div id="pdf-capture-area" style="position:absolute;left:-9999px;top:0;width:800px;background:#fff;padding:20px;direction:rtl;font-family:'Cairo',sans-serif;"></div>
