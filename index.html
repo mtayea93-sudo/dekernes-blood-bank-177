@@ -21,6 +21,10 @@
     .shake { animation: shake 0.5s; }
     @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-8px)} 40%,80%{transform:translateX(8px)} }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  </script>
 </head>
 <body class="bg-slate-50 min-h-screen">
 
@@ -152,8 +156,10 @@
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <h2 class="text-lg font-bold text-slate-800">ملخص البنوك</h2>
           <div class="flex gap-2">
-            <button onclick="exportAdminToExcel()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Excel</button>
-            <button onclick="exportAdminToPDF()" class="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-semibold hover:bg-rose-700 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>PDF</button>
+            <button onclick="exportAdminToExcel()" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Excel ملخص</button>
+            <button onclick="exportAdminToPDF()" class="px-4 py-2 bg-rose-600 text-white rounded-lg text-sm font-semibold hover:bg-rose-700 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>PDF ملخص</button>
+            <button onclick="exportAllDevicesToExcel()" class="px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm font-semibold hover:bg-emerald-800 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Excel كل الأجهزة</button>
+            <button onclick="exportAllDevicesToPDF()" class="px-4 py-2 bg-rose-700 text-white rounded-lg text-sm font-semibold hover:bg-rose-800 transition-colors flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>PDF كل الأجهزة</button>
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -230,8 +236,22 @@
           <input type="text" id="search-input" oninput="searchDevices()" class="w-full pr-10 pl-4 py-3 rounded-xl border border-slate-300 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-right" placeholder="البحث بالاسم أو الكود أو الرقم التسلسلي...">
         </div>
         <div class="flex gap-2 flex-wrap">
+          <input type="file" id="excel-import-input" accept=".xlsx,.xls" class="hidden" onchange="handleExcelImport(event)">
+          <input type="file" id="pdf-import-input" accept=".pdf" class="hidden" onchange="handlePdfImport(event)">
+          <button onclick="document.getElementById('excel-import-input').click()" class="px-5 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            استيراد Excel
+          </button>
+          <button onclick="document.getElementById('pdf-import-input').click()" class="px-5 py-3 bg-orange-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>
+            استيراد PDF
+          </button>
           <button onclick="exportBankToExcel()" class="px-5 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>تصدير Excel</button>
           <button onclick="exportBankToPDF()" class="px-5 py-3 bg-rose-600 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>تصدير PDF</button>
+          <button onclick="deleteAllDevices()" class="px-5 py-3 bg-gradient-to-r from-red-800 to-red-950 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap border border-red-900">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            حذف الكل
+          </button>
           <button onclick="openModal()" class="px-6 py-3 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition-all active:scale-[0.98] flex items-center gap-2 whitespace-nowrap"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>إضافة جهاز</button>
         </div>
       </div>
@@ -755,6 +775,122 @@
     }
 
     // ============================================
+    // EXPORT ALL DEVICES (Admin)
+    // ============================================
+    function exportAllDevicesToExcel() {
+      showLoading(true);
+      setTimeout(() => {
+        const data = allDevices.map((d, i) => {
+          const bank = BANKS.find(b => b.id === d.bankId);
+          return {
+            '#': i + 1,
+            'اسم البنك': bank ? bank.name : '-',
+            'كود البنك': bank ? bank.code : '-',
+            'اسم الجهاز': d.name || '',
+            'الكود': d.code || '',
+            'الرقم التسلسلي': d.serial || '',
+            'الماركة': d.brand || '',
+            'الموديل': d.model || '',
+            'البديل': d.spare || 'لا يوجد',
+            'كارت التعريف': d.idCard || 'لا يوجد',
+            'سجل الجهاز': d.log || 'لا يوجد',
+            'عقد الصيانة': d.contract || 'لا يوجد',
+            'تاريخ الصيانة': d.maintDate || '-',
+            'تاريخ التشغيل': d.operDate || '-',
+            'تاريخ التركيب': d.installDate || '-',
+            'الأعطال': d.issues || 'لا يوجد',
+            'ملاحظات': d.notes || ''
+          };
+        });
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'كل الأجهزة');
+        XLSX.writeFile(wb, 'بنوك_الدم_الدقهلية_كل_الأجهزة.xlsx');
+        showLoading(false);
+        showToast('تم تصدير Excel لكل الأجهزة بنجاح', 'success');
+      }, 500);
+    }
+
+    async function exportAllDevicesToPDF() {
+      showLoading(true);
+      try {
+        const cap = document.getElementById('pdf-capture-area');
+        let html = '<div style="text-align:center;margin-bottom:20px;">';
+        html += '<h1 style="color:#b91c1c;font-size:22px;margin:0;">كل أجهزة بنوك الدم - محافظة الدقهلية</h1>';
+        html += '<p style="color:#64748b;font-size:14px;margin:5px 0 0;">إجمالي الأجهزة: ' + allDevices.length + '</p>';
+        html += '</div>';
+        html += '<table style="width:100%;border-collapse:collapse;font-size:10px;">';
+        html += '<thead><tr style="background:#b91c1c;color:#fff;">';
+        html += '<th style="padding:5px;border:1px solid #ccc;">#</th>';
+        html += '<th style="padding:5px;border:1px solid #ccc;">اسم البنك</th>';
+        html += '<th style="padding:5px;border:1px solid #ccc;">كود</th>';
+        html += '<th style="padding:5px;border:1px solid #ccc;">اسم الجهاز</th>';
+        html += '<th style="padding:5px;border:1px solid #ccc;">كود الجهاز</th>';
+        html += '<th style="padding:5px;border:1px solid #ccc;">الرقم التسلسلي</th>';
+        html += '<th style="padding:5px;border:1px solid #ccc;">الماركة</th>';
+        html += '<th style="padding:5px;border:1px solid #ccc;">الموديل</th>';
+        html += '<th style="padding:5px;border:1px solid #ccc;">البديل</th>';
+        html += '<th style="padding:5px;border:1px solid #ccc;">كارت</th>';
+        html += '<th style="padding:5px;border:1px solid #ccc;">سجل</th>';
+        html += '<th style="padding:5px;border:1px solid #ccc;">عقد</th>';
+        html += '<th style="padding:5px;border:1px solid #ccc;">صيانة</th>';
+        html += '<th style="padding:5px;border:1px solid #ccc;">أعطال</th>';
+        html += '</tr></thead><tbody>';
+        allDevices.forEach((d, i) => {
+          const bank = BANKS.find(b => b.id === d.bankId);
+          const bg = i % 2 === 0 ? '#fff' : '#fef2f2';
+          html += '<tr style="background:' + bg + ';">';
+          html += '<td style="padding:4px;border:1px solid #ddd;text-align:center;">' + (i+1) + '</td>';
+          html += '<td style="padding:4px;border:1px solid #ddd;">' + escapeHtml(bank ? bank.name : '-') + '</td>';
+          html += '<td style="padding:4px;border:1px solid #ddd;text-align:center;font-family:monospace;">' + (bank ? bank.code : '-') + '</td>';
+          html += '<td style="padding:4px;border:1px solid #ddd;">' + escapeHtml(d.name || '') + '</td>';
+          html += '<td style="padding:4px;border:1px solid #ddd;text-align:center;font-family:monospace;">' + escapeHtml(d.code || '') + '</td>';
+          html += '<td style="padding:4px;border:1px solid #ddd;text-align:center;font-family:monospace;">' + escapeHtml(d.serial || '') + '</td>';
+          html += '<td style="padding:4px;border:1px solid #ddd;text-align:center;">' + escapeHtml(d.brand || '') + '</td>';
+          html += '<td style="padding:4px;border:1px solid #ddd;text-align:center;">' + escapeHtml(d.model || '') + '</td>';
+          html += '<td style="padding:4px;border:1px solid #ddd;text-align:center;">' + (d.spare || 'لا يوجد') + '</td>';
+          html += '<td style="padding:4px;border:1px solid #ddd;text-align:center;">' + (d.idCard || 'لا يوجد') + '</td>';
+          html += '<td style="padding:4px;border:1px solid #ddd;text-align:center;">' + (d.log || 'لا يوجد') + '</td>';
+          html += '<td style="padding:4px;border:1px solid #ddd;text-align:center;">' + (d.contract || 'لا يوجد') + '</td>';
+          html += '<td style="padding:4px;border:1px solid #ddd;text-align:center;">' + (d.maintDate || '-') + '</td>';
+          html += '<td style="padding:4px;border:1px solid #ddd;text-align:center;">' + (d.issues || 'لا يوجد') + '</td>';
+          html += '</tr>';
+        });
+        html += '</tbody></table>';
+        cap.innerHTML = html;
+
+        const canvas = await html2canvas(cap, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 900 });
+        const { jsPDF } = window.jspdf;
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('l', 'mm', 'a4'); // landscape for more columns
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+        const imgX = (pdfWidth - imgWidth * ratio) / 2;
+        let imgY = 10;
+        let heightLeft = imgHeight * ratio;
+        let position = imgY;
+        pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, imgHeight * ratio);
+        heightLeft -= pdfHeight - 20;
+        while (heightLeft > 0) {
+          position = heightLeft - imgHeight * ratio + imgY;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', imgX, position, imgWidth * ratio, imgHeight * ratio);
+          heightLeft -= pdfHeight - 20;
+        }
+        pdf.save('بنوك_الدم_الدقهلية_كل_الأجهزة.pdf');
+        cap.innerHTML = '';
+        showToast('تم تصدير PDF لكل الأجهزة بنجاح', 'success');
+      } catch (err) {
+        showToast('حدث خطأ أثناء التصدير', 'error');
+        console.error(err);
+      }
+      showLoading(false);
+    }
+
+    // ============================================
     // BANK PAGE - DEVICES
     // ============================================
     function getBankDevices() {
@@ -920,6 +1056,26 @@
       }, 300);
     }
 
+    function deleteAllDevices() {
+      const devices = getBankDevices();
+      if (devices.length === 0) {
+        showToast('لا يوجد أجهزة لحذفها', 'error');
+        return;
+      }
+      if (!confirm(`تحذير: سيتم حذف ${devices.length} جهاز بشكل نهائي.
+
+هل أنت متأكد من حذف كل الأجهزة؟`)) return;
+      if (!confirm('تأكيد نهائي: هل تريد فعلاً حذف جميع الأجهزة؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+      showLoading(true);
+      setTimeout(() => {
+        allDevices = allDevices.filter(d => d.bankId !== currentBankId);
+        saveToStorage();
+        renderBankDevices();
+        showLoading(false);
+        showToast(`تم حذف ${devices.length} جهاز بنجاح`, 'success');
+      }, 500);
+    }
+
     // ============================================
     // EXPORT BANK
     // ============================================
@@ -1047,7 +1203,212 @@
     function showLoading(show) {
       document.getElementById('loading-overlay').classList.toggle('hidden', !show);
     }
-  </script>
+  
+    // ============================================
+    // IMPORT FROM EXCEL & PDF
+    // ============================================
+    const FIELD_ALIASES = {
+      name: ['اسمالجهاز', 'جهاز', 'اسم', 'name', 'device', 'item'],
+      code: ['الكود', 'كود', 'code', 'id'],
+      serial: ['الرقمالتسلسلي', 'تسلسلي', 'سريال', 'serial', 'sn', 's/n'],
+      brand: ['الماركة', 'ماركة', 'brand', 'make', 'manufacturer'],
+      model: ['الموديل', 'موديل', 'model'],
+      spare: ['البديل', 'بديل', 'spare', 'backup', 'alternative'],
+      idCard: ['كارتالتعريف', 'كارت', 'idcard', 'card', 'id'],
+      log: ['سجلالجهاز', 'سجل', 'log', 'record'],
+      contract: ['عقدالصيانة', 'عقد', 'contract', 'maintenancecontract', 'صيانةعقد'],
+      maintDate: ['تاريخالصيانة', 'صيانة', 'maintenance', 'maintd', 'maint'],
+      operDate: ['تاريخالتشغيل', 'تشغيل', 'oper', 'operation', 'startdate'],
+      installDate: ['تاريخالتركيب', 'تركيب', 'install', 'installation'],
+      issues: ['الأعطال', 'اعطال', 'issues', 'عطل', 'faults', 'problems'],
+      notes: ['ملاحظات', 'notes', 'remarks', 'comments']
+    };
+
+    function normalizeHeader(h) {
+      if (!h) return '';
+      return String(h).trim().replace(/\s+/g, '').replace(/^ال/, '').toLowerCase();
+    }
+
+    function mapHeaders(headers) {
+      const map = {};
+      headers.forEach((h, idx) => {
+        const norm = normalizeHeader(h);
+        if (!norm) return;
+        for (const [field, aliases] of Object.entries(FIELD_ALIASES)) {
+          if (aliases.includes(norm) || norm.includes(field.toLowerCase())) {
+            map[field] = idx;
+            break;
+          }
+        }
+      });
+      return map;
+    }
+
+    function rowToDevice(row, headerMap) {
+      const get = (field) => {
+        const idx = headerMap[field];
+        if (idx === undefined) return '';
+        const val = row[idx];
+        return val !== undefined && val !== null ? String(val).trim() : '';
+      };
+      const val = (v) => {
+        if (!v) return 'لا يوجد';
+        const s = String(v).trim();
+        if (s === '1' || s === 'yes' || s === 'true' || s === 'موجود' || s === 'متوفر' || s === 'يوجد') return 'يوجد';
+        if (s === '0' || s === 'no' || s === 'false' || s === 'غيرموجود' || s === 'غيرمتوفر') return 'لا يوجد';
+        return s || 'لا يوجد';
+      };
+      return {
+        id: 'dev-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+        bankId: currentBankId,
+        name: get('name') || 'جهاز بدون اسم',
+        code: get('code') || '',
+        serial: get('serial') || '',
+        brand: get('brand') || '',
+        model: get('model') || '',
+        spare: val(get('spare')),
+        idCard: val(get('idCard')),
+        log: val(get('log')),
+        contract: val(get('contract')),
+        maintDate: formatDateInput(get('maintDate')),
+        operDate: formatDateInput(get('operDate')),
+        installDate: formatDateInput(get('installDate')),
+        issues: val(get('issues')),
+        notes: get('notes') || ''
+      };
+    }
+
+    function formatDateInput(v) {
+      if (!v) return '';
+      const s = String(v).trim();
+      // Excel date serial or string
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+        const [d, m, y] = s.split('/');
+        return `${y}-${m}-${d}`;
+      }
+      if (/^\d{2}-\d{2}-\d{4}$/.test(s)) {
+        const [d, m, y] = s.split('-');
+        return `${y}-${m}-${d}`;
+      }
+      // Try JS Date parsing
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) {
+        return d.toISOString().split('T')[0];
+      }
+      return '';
+    }
+
+    function importDevicesFromData(rows, sourceName) {
+      if (!rows || rows.length === 0) {
+        showToast('لم يتم العثور على بيانات في الملف', 'error');
+        return;
+      }
+      const headers = rows[0].map(h => String(h || '').trim());
+      const headerMap = mapHeaders(headers);
+      if (Object.keys(headerMap).length === 0) {
+        showToast('لم يتم التعرف على أعمدة الملف. تأكد من وجود عناوين مثل: اسم الجهاز, الكود, الرقم التسلسلي...', 'error');
+        return;
+      }
+      const dataRows = rows.slice(1).filter(r => r.some(c => String(c || '').trim() !== ''));
+      const devices = [];
+      dataRows.forEach(row => {
+        const dev = rowToDevice(row, headerMap);
+        if (dev.name && dev.name !== 'جهاز بدون اسم') {
+          devices.push(dev);
+        }
+      });
+      if (devices.length === 0) {
+        showToast('لم يتم العثور على أجهزة صالحة للاستيراد', 'error');
+        return;
+      }
+      if (!confirm(`تم العثور على ${devices.length} جهاز. هل تريد استيرادهم الآن؟`)) return;
+      allDevices = allDevices.concat(devices);
+      saveToStorage();
+      renderBankDevices();
+      showToast(`تم استيراد ${devices.length} جهاز من ${sourceName} بنجاح`, 'success');
+    }
+
+    function handleExcelImport(event) {
+      const file = event.target.files[0];
+      event.target.value = '';
+      if (!file) return;
+      showLoading(true);
+      setTimeout(() => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: '' });
+            importDevicesFromData(rows, 'Excel');
+          } catch (err) {
+            showToast('خطأ في قراءة ملف Excel', 'error');
+            console.error(err);
+          }
+          showLoading(false);
+        };
+        reader.onerror = function() {
+          showToast('خطأ في قراءة الملف', 'error');
+          showLoading(false);
+        };
+        reader.readAsArrayBuffer(file);
+      }, 300);
+    }
+
+    async function handlePdfImport(event) {
+      const file = event.target.files[0];
+      event.target.value = '';
+      if (!file) return;
+      showLoading(true);
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        let allItems = [];
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const textContent = await page.getTextContent();
+          textContent.items.forEach(item => {
+            allItems.push(item);
+          });
+        }
+        // Group items by line (y-coordinate with tolerance)
+        const lines = {};
+        allItems.forEach(item => {
+          const y = Math.round(item.transform[5] / 5) * 5; // 5px tolerance
+          if (!lines[y]) lines[y] = [];
+          lines[y].push(item);
+        });
+        const sortedYs = Object.keys(lines).sort((a, b) => b - a); // top to bottom
+        const rows = [];
+        sortedYs.forEach(y => {
+          const items = lines[y].sort((a, b) => a.transform[4] - b.transform[4]); // left to right
+          // Cluster x positions into columns (10px tolerance)
+          const cols = {};
+          items.forEach(it => {
+            const x = Math.round(it.transform[4] / 10) * 10;
+            if (!cols[x]) cols[x] = [];
+            cols[x].push(it.str);
+          });
+          const sortedXs = Object.keys(cols).sort((a, b) => a - b);
+          const row = sortedXs.map(x => cols[x].join(' ').trim());
+          if (row.length >= 3) rows.push(row);
+        });
+        if (rows.length === 0) {
+          showToast('لم يتم العثور على بيانات منظمة في ملف PDF', 'error');
+          showLoading(false);
+          return;
+        }
+        importDevicesFromData(rows, 'PDF');
+      } catch (err) {
+        showToast('خطأ في قراءة ملف PDF', 'error');
+        console.error(err);
+      }
+      showLoading(false);
+    }
+
+    </script>
 
   <!-- Hidden PDF capture area -->
   <div id="pdf-capture-area" style="position:absolute;left:-9999px;top:0;width:800px;background:#fff;padding:20px;direction:rtl;font-family:'Cairo',sans-serif;"></div>
